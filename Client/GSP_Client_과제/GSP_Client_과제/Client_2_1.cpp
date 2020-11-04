@@ -25,6 +25,7 @@ using namespace std;
 #define USERLOGIN	false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE		false	//패배(true) 승리(false)
 
+constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
 enum KeyInput
@@ -39,12 +40,12 @@ enum KeyInput
 	KEY_RIGHT_UP
 };
 
-typedef struct cs_move_packet
+typedef struct position_packet
 {
 	char type;
 	int x;
 	int y;
-};
+}position_packet;
 
 //박스 랜덤 색
 uniform_int_distribution<> uiNUM(50, 255);
@@ -423,20 +424,6 @@ void moveCamera(int key)
 
 void handleKeyboard(int key, int x, int y)
 {
-	//체스판 밖과 충돌처리
-	//if (pox == 50 && key == 100) {
-	//	key = 0;
-	//}
-	//if (pox == 400 && key == 102) {
-	//	key = 0;
-	//}
-	//if (poy == 50 && key == 103) {
-	//	key = 0;
-	//}
-	//if (poy == 400 && key == 101) {
-	//	key = 0;
-	//}
-
 	switch (key)
 	{
 		//캐릭터 방향 설정
@@ -453,11 +440,7 @@ void handleKeyboard(int key, int x, int y)
 		player.SetMoveDirection(KEY_RIGHT_DOWN);
 		break;
 	}
-
 	cout << key << endl;
-	//카메라 이동
-	//moveCamera(key);
-
 	glutPostRedisplay();
 }
 
@@ -492,46 +475,56 @@ void myInit(void)
 }
 
 //서버에서 온 데이터 타입별로 처리
-void processdata(WSABUF wsabuf) {
-	move_packet mp;
+void processdata(char* buf) {
 
-	mp = *(move_packet*)wsabuf.buf;
-	cout << "Received : " << mp.x << " " << mp.y << " " << mp.id << " " << mp.type << endl;
-
-	cout << "Clients :";
-	for (User u : users)
-		cout << u.GetId() << " ";
-	if (mp.type == LOGIN)
-	{
-		User user(mp.id,0,0,0.f);
-		users.push_back(user);
+	switch (buf[0]) {
+	case SC_POS: {
+		position_packet* pp = reinterpret_cast<position_packet*>(buf);
+		player.SetXpos(pp->x);
+		player.SetYpos(pp->y);
+		cout << player.GetXpos() << " " << player.GetYpos() << endl;
+		break;
 	}
-	else if (mp.type == MOVE_Me) {
-		player.SetXpos(mp.x);
-		player.SetYpos(mp.y);
 	}
-	else if (mp.type == MOVE) {
-		bool find = false;
+	//move_packet mp;
 
-		for (User& u : users)
-			if (u.GetId() == mp.id) {
-				u.SetXpos(mp.x);
-				u.SetYpos(mp.y);
-				find = TRUE;
-			}
+	//mp = *(move_packet*)wsabuf.buf;
+	//cout << "Received : " << mp.x << " " << mp.y << " " << mp.id << " " << mp.type << endl;
 
-		if (find == false) {
-			User user(mp.id, mp.x, mp.y, 20.f);
-			users.push_back(user);
-		}
+	//cout << "Clients :";
+	//for (User u : users)
+	//	cout << u.GetId() << " ";
+	//if (mp.type == LOGIN)
+	//{
+	//	User user(mp.id,0,0,0.f);
+	//	users.push_back(user);
+	//}
+	//else if (mp.type == MOVE_Me) {
+	//	player.SetXpos(mp.x);
+	//	player.SetYpos(mp.y);
+	//}
+	//else if (mp.type == MOVE) {
+	//	bool find = false;
 
-	}
-	else if (mp.type == LOGOUT) {
-		for (User u : users)
-			if (u.GetId() == mp.id) {
-				users.erase(remove(users.begin(), users.end(), u), users.end());
-			}
-	}
+	//	for (User& u : users)
+	//		if (u.GetId() == mp.id) {
+	//			u.SetXpos(mp.x);
+	//			u.SetYpos(mp.y);
+	//			find = TRUE;
+	//		}
+
+	//	if (find == false) {
+	//		User user(mp.id, mp.x, mp.y, 20.f);
+	//		users.push_back(user);
+	//	}
+
+	//}
+	//else if (mp.type == LOGOUT) {
+	//	for (User u : users)
+	//		if (u.GetId() == mp.id) {
+	//			users.erase(remove(users.begin(), users.end(), u), users.end());
+	//		}
+	//}
 	glutPostRedisplay();
 }
 
@@ -539,18 +532,18 @@ void processdata(WSABUF wsabuf) {
 void DoTimer4RecvServer(int n) {
 
 	move_packet mp;
+	int retval;
 
-	WSABUF wsabuf;
-	wsabuf.buf = (char*)&mp;
-	wsabuf.len = sizeof(mp);
+	char buf[MAX_BUFFER];
+	int len;
 	while (true) {
 		DWORD num_recv;
 		DWORD flag = 0;
-		int getsize = WSARecv(serverSocket, &wsabuf, 1, &num_recv, &flag, NULL, NULL);
-		if (getsize == -1)
+		retval = recv(serverSocket, (char*)&buf, MAX_BUFFER, 0);
+		if (retval == -1)
 			break;
 		else if (WSAGetLastError() != WSAEWOULDBLOCK) {
-			processdata(wsabuf);
+			processdata(buf);
 		}
 		else break;
 	}
@@ -583,7 +576,7 @@ void BuildBoard(int argc, char** argv)
 
 //패킷 전송
 void DataToServer() {
-	cs_move_packet mp;
+	position_packet mp;
 	char buf[MAX_BUFFER];
 	int num_sent;
 
@@ -591,7 +584,7 @@ void DataToServer() {
 	mp.x = player.GetXpos();
 	mp.y = player.GetYpos();
 
-	int retval = send(serverSocket, (char*)&mp,sizeof(cs_move_packet),0);
+	int retval = send(serverSocket, (char*)&mp,sizeof(position_packet),0);
 
 	cout << "Sent : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 

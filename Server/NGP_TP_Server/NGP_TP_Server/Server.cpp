@@ -5,33 +5,114 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include<random>
 using namespace std;
 
 #define SERVERPORT 9000
 #define MAX_BUFFER 1024
+#define MAP_SIZE	100.f	//맵 한칸당 크기
 
+constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
-typedef struct cs_move_packet
+uniform_int_distribution<> uiNUM(50, 255);
+uniform_int_distribution<> enemy_position_NUM(-50 * MAP_SIZE, 50 * MAP_SIZE);
+default_random_engine dre{ 2016182007 };
+
+typedef struct position_packet
 {
     char type;
     int x;
     int y;
-}cs_move_packet;
+}position_packet;
 
-
-class User
+typedef struct sc_login_packet
 {
+    char type;
+    int id;
+    bool login;
+};
+
+
+class User {
     int id;
     int x;
     int y;
+    float size;
 
 public:
-    User(int id, int x, int y) : id{ id }, x{ x }, y{ y } {}
+    User() {
+        x = enemy_position_NUM(dre);
+        y = enemy_position_NUM(dre);
+        size = 20.f;
+        id = 0;
+    }
+    User(int id) :id{ id } {
+        x = enemy_position_NUM(dre);
+        y = enemy_position_NUM(dre);
+        size = 20.f;
+    }
 
-    int getid() const {
+
+    //다른 원과의 거리 측정
+    float MeasureDistance(User user1) {
+        float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
+        return distance;
+    }
+
+    //다른 유저와 충돌처리
+    void CrushCheck(User user1) {
+        // 충돌 체크 후 상대방이 더 클 경우
+        if (user1.GetSize() > size) {
+            if (MeasureDistance(user1) < user1.GetSize()) {
+                float newsize = user1.GetSize() + size * 0.3f;
+                user1.SetSize(newsize);
+                //내가 죽음
+            }
+        }
+
+        // 충돌체크 후 내가 더 큰경우
+        else if (user1.GetSize() < size) {
+            if (MeasureDistance(user1) < size) {
+                float newsize = size + user1.GetSize() * 0.3f;
+                size = newsize;
+                //상대가 죽음
+            }
+        }
+    }
+
+    //x좌표 설정
+    void SetXpos(int xpos) {
+        x = xpos;
+    }
+    //y좌표 설정
+    void SetYpos(int ypos) {
+        y = ypos;
+    }
+    //size 설정
+    void SetSize(float newsize) {
+        size = newsize;
+    }
+    //x좌표 리턴
+    int GetXpos() {
+        return x;
+    }
+    //y좌표 리턴
+    int GetYpos() {
+        return y;
+    }
+    //size 리턴
+    float GetSize() {
+        return size;
+    }
+    //id 리턴
+    int GetId() const {
         return id;
     }
+
+    bool operator==(const User& rhs) const {
+        return GetId() == rhs.GetId();
+    };
 };
 
 vector<User> users;
@@ -85,6 +166,26 @@ int recvn(SOCKET s, char* buf, int len, int flags)
 }
 
 
+void send_first_pos(SOCKET soc, User user)
+{
+    position_packet mp;
+    char buf[MAX_BUFFER];
+    int num_sent;
+
+    mp.type = SC_POS;
+    mp.x = user.GetXpos();
+    mp.y = user.GetYpos();
+
+    int retval = send(soc, (char*)&mp, sizeof(position_packet), 0);
+
+    cout << "Sent : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
+}
+
+//void send_Login_packet(User u)
+//{
+//
+//}
+
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
@@ -106,7 +207,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         //수신된 패킷 처리
         switch (buf[0]){
         case CS_MOVE: {
-            cs_move_packet* mp = reinterpret_cast<cs_move_packet*>(buf);
+            position_packet* mp = reinterpret_cast<position_packet*>(buf);
             int x = mp->x;
             int y = mp->y;
 
@@ -118,7 +219,6 @@ DWORD WINAPI ProcessClient(LPVOID arg)
            
         }
     
-
     }
 
     cout << "쓰레드 종료" << endl;
@@ -182,12 +282,21 @@ int main()
 
         cout << client_sock << "수신" << endl;
         //유저 벡터에 유저 추가
-        User user(client_sock, 0, 0);
+        User user(client_sock);
         users.push_back(user);
+
+        //유저의 좌표를 서버에 보내고
+        send_first_pos(client_sock, user);
+        //브로드 캐스트
 
         cout << "현재 접속한 User: ";
         for (auto u : users)
-            cout << u.getid() << "->";
+            cout << u.GetId() << "->";
+
+        for (User u : users)
+        {
+            //send_Login_packet(u);
+        }
 
         if (hThread == NULL) { closesocket(client_sock); }
         else {
