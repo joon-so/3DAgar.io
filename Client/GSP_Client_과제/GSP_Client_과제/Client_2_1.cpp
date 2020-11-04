@@ -10,13 +10,34 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
-#define w_width 800
-#define w_height 400
+
 #define MAX_BUFFER 1024
 #define SERVER_PORT 9000
 #define SERVER_IP "127.0.0.1" // 자기 자신의 주소는 항상 127.0.0.1
 
+#define w_width		800		//윈도우창 가로 크기
+#define w_height	400		//윈도우창 세로 크기
+#define MOVE_SPEED	2		//카메라 움직이는 기본 속도
+#define MAP_SIZE	100.f	//맵 한칸당 크기
+#define ENEMY_COUNT	100		//먹이 개수
+#define ITEM_COUNT	20		//아이템 개수
+#define ITEM_TYPE	flase	//속도향상(false), 스턴(true)
+#define USERLOGIN	false	//유저 로그아웃(false), 유저 로그인(true)
+#define LOSE		false	//패배(true) 승리(false)
+
 constexpr char CS_MOVE = 1;
+
+enum KeyInput
+{
+	KEY_UP_DOWN,
+	KEY_DOWN_DOWN,
+	KEY_LEFT_DOWN,
+	KEY_RIGHT_DOWN,
+	KEY_UP_UP,
+	KEY_DOWN_UP,
+	KEY_LEFT_UP,
+	KEY_RIGHT_UP
+};
 
 typedef struct cs_move_packet
 {
@@ -26,14 +47,12 @@ typedef struct cs_move_packet
 };
 
 //박스 랜덤 색
-uniform_int_distribution<> uiNUM(0, 255);
+uniform_int_distribution<> uiNUM(50, 255);
+uniform_int_distribution<> enemy_position_NUM(-50 * MAP_SIZE, 50 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
 
 //서버소켓
 SOCKET serverSocket;
-
-//내 말의 좌표
-int pox = 50, poy = 50;
 
 //패킷 타입
 constexpr int LOGIN = 1;
@@ -41,69 +60,262 @@ constexpr int MOVE_Me = 2;
 constexpr int MOVE = 3;
 constexpr int LOGOUT = 4;
 
-
-void DataToServer(int key);
 void error_display(const char* msg, int err_no);
-void changeCoordinate(int corx, int cory, int& posx, int& posy);
-void whiteBox(int x, int y);
-void blackBox(int x, int y);
-void redBox(int x, int y);
 void myDisplay(void);
 void moveCamera(int key);
 void handleKeyboard(int key, int x, int y);
+void handleKeyboardUp(int key, int x, int y);
 void myInit(void);
 void processdata(WSABUF wsabuf);
 void DoTimer4RecvServer(int n);
 void BuildBoard(int argc, char** argv);
 void DataToServer();
+void DrawLine(float start_x, float start_y, float end_x, float end_y);
+void DrawMap();
+
+typedef struct Key {
+	bool Arrow_Up = false;
+	bool Arrow_Down = false;
+	bool Arrow_Left = false;
+	bool Arrow_Right = false;
+};
+
+class Player {
+	int x;
+	int y;
+	float size = 20.f;
+	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
+	Key move_direction;
+
+public:
+	Player() {
+		x = 400, y = 200;
+		//size = 20.f;
+		//prev_size = 20.f;
+	}
+	Player(int x, int y, float size) :x{ x }, y{ y }, size{ size } {}
+
+	//화면에 사용자 출력
+	void show() {
+		glBegin(GL_POLYGON);
+		glColor3f(1.0, 0.0, 0.0);
+
+		if (move_direction.Arrow_Up) {
+			y += MOVE_SPEED;
+			DataToServer();
+		}
+		if (move_direction.Arrow_Down) {
+			y -= MOVE_SPEED;
+			DataToServer();
+		}
+		if (move_direction.Arrow_Left) {
+			x -= MOVE_SPEED;
+			DataToServer();
+		}
+		if (move_direction.Arrow_Right) {
+			x += MOVE_SPEED;
+			DataToServer();
+		}
+
+		//맵 충돌처리
+		if (50 * MAP_SIZE < x + size) {
+			size = size / 2.f;
+			if (size < 20.f)
+				size = 20.f;
+			x = 50 * MAP_SIZE - size;
+			move_direction.Arrow_Right = false;
+		}
+		if (50 * MAP_SIZE < y + size) {
+			size = size / 2.f;
+			if (size < 20.f)
+				size = 20.f;
+			y = 50 * MAP_SIZE - size;
+			move_direction.Arrow_Up = false;
+		}
+		else if (-50 * MAP_SIZE > x - size) {
+			size = size / 2.f;
+			if (size < 20.f)
+				size = 20.f;
+			x = -50 * MAP_SIZE + size;
+			move_direction.Arrow_Left = false;
+		}
+		if (-50 * MAP_SIZE > y - size) {
+			size = size / 2.f;
+			if (size < 20.f)
+				size = 20.f;
+			y = -50 * MAP_SIZE + size;
+			move_direction.Arrow_Down = false;
+		}
+
+		for (int i = 0; i < 360; i++)
+		{
+			float angle = i * 3.141592 / 180;
+			float ax = size * cos(angle);
+			float ay = size * sin(angle);
+			glVertex2f(x + ax, y + ay);
+		}
+		glEnd();
+	}
+
+	//x좌표 설정
+	void SetXpos(int xpos) {
+		x = xpos;
+	}
+	//y좌표 설정
+	void SetYpos(int ypos) {
+		y = ypos;
+	}
+	//size 설정
+	void SetSize(float newsize) {
+		size = newsize;
+	}
+	//변경전 사이즈 설정
+	void SetPrevSize(float recentsize) {
+		prev_size = recentsize;
+	}
+	//캐릭터 방향 설정
+	void SetMoveDirection(int i) {
+		if (i == KEY_UP_DOWN)
+			move_direction.Arrow_Up = true;
+		if (i == KEY_DOWN_DOWN)
+			move_direction.Arrow_Down = true;
+		if (i == KEY_LEFT_DOWN)
+			move_direction.Arrow_Left = true;
+		if (i == KEY_RIGHT_DOWN)
+			move_direction.Arrow_Right = true;
+		if (i == KEY_UP_UP)
+			move_direction.Arrow_Up = false;
+		if (i == KEY_DOWN_UP)
+			move_direction.Arrow_Down = false;
+		if (i == KEY_LEFT_UP)
+			move_direction.Arrow_Left = false;
+		if (i == KEY_RIGHT_UP)
+			move_direction.Arrow_Right = false;
+	}
+	//x좌표 리턴
+	int GetXpos() {
+		return x;
+	}
+	//y좌표 리턴
+	int GetYpos() {
+		return y;
+	}
+	//size 리턴
+	float GetSize() {
+		return size;
+	}
+	//변경전 사이즈 리턴
+	float GetPrevSize() {
+		return prev_size;
+	}
+	//키보드 입력 상태 리턴
+	Key GetKeybordInput() {
+		return move_direction;
+	}
+};
 
 class User {
 	int id;
 	int x;
 	int y;
-
-	int color_r = uiNUM(dre);
-	int color_g = uiNUM(dre);
-	int color_b = uiNUM(dre);
+	float size;
 
 public:
-
 	User() {
+		x = enemy_position_NUM(dre);
+		y = enemy_position_NUM(dre);
+		size = 20.f;
 		id = 0;
 	}
-	User(int id) : id{ id }, x{ 50 }, y{ 50 } {}
+	User(int id, int x, int y, float size) :id{ id }, x{ x }, y{ y }, size{ size } {}
 
-	User(int id, int x, int y) : id{ id }, x{ x }, y{ y } {}
-
+	//화면에 사용자 출력
 	void show() {
 		glBegin(GL_POLYGON);
-		glColor3ub(color_r, color_g, color_b);
-		x = x + 10;
-		y = y + 10;
-		glVertex2i(x, y);
-		glVertex2i(x, y + 30);
-		glVertex2i(x + 30, y + 30);
-		glVertex2i(x + 30, y);
+		glColor3f(1.0, 0.0, 0.0);
+
+		for (int i = 0; i < 360; i++)
+		{
+			float angle = i * 3.141592 / 180;
+			float ax = size * cos(angle);
+			float ay = size * sin(angle);
+			glVertex2f(x + ax, y + ay);
+		}
 		glEnd();
 	}
 
-	int getid() const {
+	//다른 원과의 거리 측정
+	float MeasureDistance(User user1) {
+		float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
+		return distance;
+	}
+
+	//다른 유저와 충돌처리
+	void CrushCheck(User user1) {
+		// 충돌 체크 후 상대방이 더 클 경우
+		if (user1.GetSize() > size) {
+			if (MeasureDistance(user1) < user1.GetSize()) {
+				float newsize = user1.GetSize() + size * 0.3f;
+				user1.SetSize(newsize);
+				//내가 죽음
+			}
+		}
+
+		// 충돌체크 후 내가 더 큰경우
+		else if (user1.GetSize() < size) {
+			if (MeasureDistance(user1) < size) {
+				float newsize = size + user1.GetSize() * 0.3f;
+				size = newsize;
+				//상대가 죽음
+			}
+		}
+	}
+
+	//void MapCrushCheck()
+	//{
+	//	if (50 * MAP_SIZE < x + size | 50 * MAP_SIZE < y + size)
+	//		size = size / 2.f;
+	//	else if (-50 * MAP_SIZE > x - size | -50 * MAP_SIZE > y - size)
+	//		size = size / 2.f;
+	//}
+
+	//x좌표 설정
+	void SetXpos(int xpos) {
+		x = xpos;
+	}
+	//y좌표 설정
+	void SetYpos(int ypos) {
+		y = ypos;
+	}
+	//size 설정
+	void SetSize(float newsize) {
+		size = newsize;
+	}
+	//x좌표 리턴
+	int GetXpos() {
+		return x;
+	}
+	//y좌표 리턴
+	int GetYpos() {
+		return y;
+	}
+	//size 리턴
+	float GetSize() {
+		return size;
+	}
+	//id 리턴
+	int GetId() const {
 		return id;
-	}
-	void set_x(int num) {
-		x = num;
-	}
-	void set_y(int num) {
-		y = num;
 	}
 
 	bool operator==(const User& rhs) const {
-		return getid() == rhs.getid();
+		return GetId() == rhs.GetId();
 	};
 };
 
 //User Vector
 vector<User> users;
+Player player;				//player 생성
 
 typedef struct clients_info
 {
@@ -138,143 +350,52 @@ void error_display(const char* msg, int err_no)
 	LocalFree(lpMsgBuf);
 }
 
-//8x8좌표대로 이동
-void changeCoordinate(int corx, int cory, int& posx, int& posy) {
-	switch (corx) {
-	case 1:
-		posx = 50;
-		break;
-	case 2:
-		posx = 100;
-		break;
-	case 3:
-		posx = 150;
-		break;
-	case 4:
-		posx = 200;
-		break;
-	case 5:
-		posx = 250;
-		break;
-	case 6:
-		posx = 300;
-		break;
-	case 7:
-		posx = 350;
-		break;
-	case 8:
-		posx = 400;
-		break;
-	default:
-		posx = 50;
-		break;
-	}
-
-	switch (cory) {
-	case 1:
-		posy = 50;
-		break;
-	case 2:
-		posy = 100;
-		break;
-	case 3:
-		posy = 150;
-		break;
-	case 4:
-		posy = 200;
-		break;
-	case 5:
-		posy = 250;
-		break;
-	case 6:
-		posy = 300;
-		break;
-	case 7:
-		posy = 350;
-		break;
-	case 8:
-		posy = 400;
-		break;
-	default:
-		posy = 50;
-		break;
-	}
-}
-
-void whiteBox(int x, int y)
+//선그리기
+void DrawLine(float start_x, float start_y, float end_x, float end_y)
 {
+	glPointSize(5.0f);
 	glBegin(GL_LINE_LOOP);
-	glColor3f(0.0, 0.0, 0.0);
-	glVertex2i(x, y);
-	glVertex2i(x, y + 50);
-	glVertex2i(x + 50, y + 50);
-	glVertex2i(x + 50, y);
+	glVertex2f(start_x, start_y);
+	glVertex2f(end_x, end_y);
 	glEnd();
 }
 
-void blackBox(int x, int y)
+//맵 그리기
+void DrawMap()
 {
-	glBegin(GL_POLYGON);
-	glColor3f(0.0, 0.0, 0.0);
-	glVertex2i(x, y);
-	glVertex2i(x, y + 50);
-	glVertex2i(x + 50, y + 50);
-	glVertex2i(x + 50, y);
-	glEnd();
-}
+	for (int i = -50; i < 51; i++)
+	{
+		DrawLine(i * MAP_SIZE, 50 * MAP_SIZE, i * MAP_SIZE, -50 * MAP_SIZE);
+		DrawLine(50 * MAP_SIZE, i * MAP_SIZE, -50 * MAP_SIZE, i * MAP_SIZE);
+	}
 
-void redBox(int x, int y)
-{
-	glBegin(GL_POLYGON);
-	glColor3f(1.0, 0.0, 0.0);
-	x = x + 10;
-	y = y + 10;
-	glVertex2i(x, y);
-	glVertex2i(x, y + 30);
-	glVertex2i(x + 30, y + 30);
-	glVertex2i(x + 30, y);
-	glEnd();
 }
 
 void myDisplay(void)
 {
-	int x = 50, y = 50;
-	bool isBlack = true;
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.0, 0.0, 0.0);
 	glPointSize(1.0);
 
-	for (int i = 0; i < 8; i++)
-	{
-		if (i % 2 == 0)
-		{
-			isBlack = true;
-		}
-		else
-		{
-			isBlack = false;
-		}
+	//맵생성
+	DrawMap();
+	
+	//redBox(pox, poy);
 
-		for (int j = 0; j < 8; j++)
-		{
-			if (isBlack)
-			{
-				blackBox(x, y);
-				isBlack = false;
-			}
-			else
-			{
-				whiteBox(x, y);
-				isBlack = true;
-			}
-			x += 50;
-		}
-		y += 50;
-		x = 50;
+	player.show();
+
+	if (player.GetKeybordInput().Arrow_Up) {
+		glTranslatef(0, -MOVE_SPEED, 0.0f);
 	}
-
-	redBox(pox, poy);
-
+	if (player.GetKeybordInput().Arrow_Down) {
+		glTranslatef(0, +MOVE_SPEED, 0.0f);
+	}
+	if (player.GetKeybordInput().Arrow_Left) {
+		glTranslatef(MOVE_SPEED, 0, 0.0f);
+	}
+	if (player.GetKeybordInput().Arrow_Right) {
+		glTranslatef(-MOVE_SPEED, 0, 0.0f);
+	}
 
 	//다른 클라이언트 업데이트
 	for (User user : users) {
@@ -286,61 +407,78 @@ void myDisplay(void)
 
 void moveCamera(int key)
 {
-	//카메라 이동
-	switch (key) {
-	case 100:
-		glTranslatef(2, 0, 0.0f);
-		break;
-	case 101:
-		glTranslatef(0, -2, 0.0f);
-		break;
-	case 102:
-		glTranslatef(-2, 0, 0.0f);
-		break;
-	case 103:
-		glTranslatef(0, 2, 0.0f);
-		break;
+	if (player.GetKeybordInput().Arrow_Up) {
+		glTranslatef(0, MOVE_SPEED, 0.0f);
+	}
+	if (player.GetKeybordInput().Arrow_Down) {
+		glTranslatef(0, -MOVE_SPEED, 0.0f);
+	}
+	if (player.GetKeybordInput().Arrow_Left) {
+		glTranslatef(-MOVE_SPEED, 0, 0.0f);
+	}
+	if (player.GetKeybordInput().Arrow_Right) {
+		glTranslatef(MOVE_SPEED, 0, 0.0f);
 	}
 }
 
 void handleKeyboard(int key, int x, int y)
 {
 	//체스판 밖과 충돌처리
-	if (pox == 50 && key == 100) {
-		key = 0;
-	}
-	if (pox == 400 && key == 102) {
-		key = 0;
-	}
-	if (poy == 50 && key == 103) {
-		key = 0;
-	}
-	if (poy == 400 && key == 101) {
-		key = 0;
-	}
+	//if (pox == 50 && key == 100) {
+	//	key = 0;
+	//}
+	//if (pox == 400 && key == 102) {
+	//	key = 0;
+	//}
+	//if (poy == 50 && key == 103) {
+	//	key = 0;
+	//}
+	//if (poy == 400 && key == 101) {
+	//	key = 0;
+	//}
 
 	switch (key)
 	{
-	case 100:
-		pox -= 2;
+		//캐릭터 방향 설정
+	case GLUT_KEY_UP:
+		player.SetMoveDirection(KEY_UP_DOWN);
 		break;
-	case 102:
-		pox += 2;
+	case GLUT_KEY_DOWN:
+		player.SetMoveDirection(KEY_DOWN_DOWN);
 		break;
-	case 101:
-		poy += 2;
+	case GLUT_KEY_LEFT:
+		player.SetMoveDirection(KEY_LEFT_DOWN);
 		break;
-	case 103:
-		poy -= 2;
+	case GLUT_KEY_RIGHT:
+		player.SetMoveDirection(KEY_RIGHT_DOWN);
+		break;
 	}
 
 	cout << key << endl;
 	//카메라 이동
-	moveCamera(key);
+	//moveCamera(key);
 
-	if (key != 0)
-		DataToServer();
 	glutPostRedisplay();
+}
+
+void handleKeyboardUp(int key, int x, int y)
+{
+	switch (key)
+	{
+		//캐릭터 방향 설정
+	case GLUT_KEY_UP:
+		player.SetMoveDirection(KEY_UP_UP);
+		break;
+	case GLUT_KEY_DOWN:
+		player.SetMoveDirection(KEY_DOWN_UP);
+		break;
+	case GLUT_KEY_LEFT:
+		player.SetMoveDirection(KEY_LEFT_UP);
+		break;
+	case GLUT_KEY_RIGHT:
+		player.SetMoveDirection(KEY_RIGHT_UP);
+		break;
+	}
 }
 
 void myInit(void)
@@ -362,35 +500,35 @@ void processdata(WSABUF wsabuf) {
 
 	cout << "Clients :";
 	for (User u : users)
-		cout << u.getid() << " ";
+		cout << u.GetId() << " ";
 	if (mp.type == LOGIN)
 	{
-		User user(mp.id);
+		User user(mp.id,0,0,0.f);
 		users.push_back(user);
 	}
 	else if (mp.type == MOVE_Me) {
-		pox = mp.x;
-		poy = mp.y;
+		player.SetXpos(mp.x);
+		player.SetYpos(mp.y);
 	}
 	else if (mp.type == MOVE) {
 		bool find = false;
 
 		for (User& u : users)
-			if (u.getid() == mp.id) {
-				u.set_x(mp.x);
-				u.set_y(mp.y);
+			if (u.GetId() == mp.id) {
+				u.SetXpos(mp.x);
+				u.SetYpos(mp.y);
 				find = TRUE;
 			}
 
 		if (find == false) {
-			User user(mp.id, mp.x, mp.y);
+			User user(mp.id, mp.x, mp.y, 20.f);
 			users.push_back(user);
 		}
 
 	}
 	else if (mp.type == LOGOUT) {
 		for (User u : users)
-			if (u.getid() == mp.id) {
+			if (u.GetId() == mp.id) {
 				users.erase(remove(users.begin(), users.end(), u), users.end());
 			}
 	}
@@ -430,10 +568,11 @@ void BuildBoard(int argc, char** argv)
 	glutInitWindowSize(w_width, w_height);
 	glutInitWindowPosition(100, 150);
 	glutCreateWindow("게임서버프로그래밍 8 x 8 ChessBoard");
-	glutSpecialFunc(handleKeyboard);
 	glutDisplayFunc(myDisplay);
+	glutSpecialFunc(handleKeyboard);
+	glutSpecialUpFunc(handleKeyboardUp);
 	//초기 중앙 값 설정
-	glTranslatef(340, 140, 0.0f);
+	glTranslatef(0, 0, 0.0f);
 
 	//Recv 반복
 	glutTimerFunc(5, DoTimer4RecvServer, 1);
@@ -449,8 +588,8 @@ void DataToServer() {
 	int num_sent;
 
 	mp.type = CS_MOVE;
-	mp.x = pox;
-	mp.y = poy;
+	mp.x = player.GetXpos();
+	mp.y = player.GetYpos();
 
 	int retval = send(serverSocket, (char*)&mp,sizeof(cs_move_packet),0);
 
