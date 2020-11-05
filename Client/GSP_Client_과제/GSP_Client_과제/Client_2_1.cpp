@@ -13,7 +13,7 @@ using namespace std;
 
 #define MAX_BUFFER 1024
 #define SERVER_PORT 9000
-#define SERVER_IP "192.168.35.184" // 자기 자신의 주소는 항상 127.0.0.1
+#define SERVER_IP "127.0.0.1" // 자기 자신의 주소는 항상 127.0.0.1
 
 #define w_width		800		//윈도우창 가로 크기
 #define w_height	400		//윈도우창 세로 크기
@@ -94,6 +94,26 @@ void BuildBoard(int argc, char** argv);
 void DataToServer();
 void DrawLine(float start_x, float start_y, float end_x, float end_y);
 void DrawMap();
+
+int recvn(SOCKET s, char* buf, int len, int flags)
+{
+	int received;
+	char* ptr = buf;
+	int left = len;
+
+	while (left > 0) {
+		received = recv(s, ptr, left, flags);
+		if (received == SOCKET_ERROR)
+			return SOCKET_ERROR;
+		else if (received == 0)
+			break;
+		left -= received;
+		ptr += received;
+	}
+
+	//받은 데이터 길이 반환
+	return (len - left);
+}
 
 typedef struct Key {
 	bool Arrow_Up = false;
@@ -584,15 +604,18 @@ void DoTimer4RecvServer(int n) {
 
 	char buf[MAX_BUFFER];
 	int len;
+
 	while (true) {
 		DWORD num_recv;
 		DWORD flag = 0;
-		retval = recv(serverSocket, (char*)&buf, MAX_BUFFER, 0);
+		retval = recvn(serverSocket, (char*)&len, sizeof(int), 0);
 		if (retval != -1)
-			cout << "데이터 수신	" << retval << endl;
+			cout << "데이터 수신	" << len << endl;
 		if (retval == -1)
 			break;
 		else if (WSAGetLastError() != WSAEWOULDBLOCK) {
+			retval = recvn(serverSocket, buf, len, 0);
+			cout << "Real데이터 수신	" << retval << endl;
 			processdata(buf);
 		}
 		else break;
@@ -628,13 +651,16 @@ void BuildBoard(int argc, char** argv)
 void DataToServer() {
 	position_packet mp;
 	char buf[MAX_BUFFER];
-	int num_sent;
+	int retval;
 
 	mp.type = CS_MOVE;
 	mp.x = player.GetXpos();
 	mp.y = player.GetYpos();
+	int size = sizeof(position_packet);
 
-	int retval = send(serverSocket, (char*)&mp,sizeof(position_packet),0);
+	retval = send(serverSocket, (char*)&size, sizeof(int), 0);
+
+	retval = send(serverSocket, (char*)&mp, sizeof(position_packet), 0);
 
 	//cout << "Sent : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 

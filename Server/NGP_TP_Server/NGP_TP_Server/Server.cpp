@@ -177,18 +177,21 @@ int recvn(SOCKET s, char* buf, int len, int flags)
     return (len - left);
 }
 
-
 void send_first_pos(SOCKET soc, User user)
 {
     position_packet mp;
     char buf[MAX_BUFFER];
-    int num_sent;
+    int retval;
 
     mp.type = SC_POS;
     mp.x = user.GetXpos();
     mp.y = user.GetYpos();
+    
+    int size = sizeof(position_packet);
 
-    int retval = send(soc, (char*)&mp, sizeof(position_packet), 0);
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&mp, sizeof(position_packet), 0);
 
     cout << "send_first_pos : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 }
@@ -197,15 +200,18 @@ void send_Login_packet(SOCKET soc, User user)
 {
     sc_login_packet lp;
     char buf[MAX_BUFFER];
-    int num_sent;
+    int retval;
 
     lp.type = SC_LOGIN;
     lp.id = user.GetId();
     lp.x = user.GetXpos();
     lp.y = user.GetYpos();
 
+    int size = sizeof(sc_login_packet);
 
-    int retval = send(soc, (char*)&lp, sizeof(sc_login_packet), 0);
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&lp, sizeof(sc_login_packet), 0);
 
     cout << "send_Login_packet : 전송대상"<< soc <<" "<< lp.id <<" " << lp.x << " " << lp.y << " " << "(" << retval << " bytes)\n";
 }
@@ -214,14 +220,17 @@ void send_user_move_packet(SOCKET soc, int id, int x, int y)
 {
     sc_user_move_packet ump;
     char buf[MAX_BUFFER];
-    int num_sent;
+    int retval;
 
     ump.type = SC_USER_MOVE;
     ump.id = id;
     ump.x = x;
     ump.y = y;
+    int size = sizeof(sc_user_move_packet);
 
-    int retval = send(soc, (char*)&ump, sizeof(sc_user_move_packet), 0);
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&ump, sizeof(sc_user_move_packet), 0);
 
     //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
 }
@@ -240,7 +249,9 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
     while (true) {
         //데이터 수신
-        retval = recv(client_sock, (char*)&buf, MAX_BUFFER, 0);
+        retval = recvn(client_sock, (char*)&len, sizeof(int), 0);
+        retval = recvn(client_sock, buf, len, 0);
+        //retval = recv(client_sock, (char*)&buf, MAX_BUFFER, 0);
         if (client_sock == INVALID_SOCKET) err_quit("recv()");
         if (retval <= 0) break;
 
@@ -336,15 +347,12 @@ int main()
 
         //유저의 좌표를 서버에 보내고
         send_first_pos(client_sock, user);
-        //Sleep(400);
 
 
         cout << "현재 접속한 User: ";
         for (const User u : users)
             cout << u.GetId() << "->";
         cout << endl;
-        //Sleep을 걸어야만 클라이언트가 제대로 수신 받음...무슨 일인가...ㅅㅂ
-        Sleep(500);
         //새로운 유저가 접속한 것을 다른 클라이언트들에게 알림(id, 좌표 전송)
         for (User u : users){
             if (u.GetId() != user.GetId()) {
