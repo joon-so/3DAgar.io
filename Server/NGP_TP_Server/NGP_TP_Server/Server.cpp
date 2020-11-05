@@ -15,8 +15,10 @@ using namespace std;
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
+constexpr char SC_LOGIN = 2;
+
 uniform_int_distribution<> uiNUM(50, 255);
-uniform_int_distribution<> enemy_position_NUM(-50 * MAP_SIZE, 50 * MAP_SIZE);
+uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
 
 typedef struct position_packet
@@ -30,8 +32,9 @@ typedef struct sc_login_packet
 {
     char type;
     int id;
-    bool login;
-};
+    int x;
+    int y;
+}sc_login_packet;
 
 
 class User {
@@ -178,13 +181,25 @@ void send_first_pos(SOCKET soc, User user)
 
     int retval = send(soc, (char*)&mp, sizeof(position_packet), 0);
 
-    cout << "Sent : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
+    cout << "send_first_pos : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 }
 
-//void send_Login_packet(User u)
-//{
-//
-//}
+void send_Login_packet(SOCKET soc, User u)
+{
+    sc_login_packet lp;
+    char buf[MAX_BUFFER];
+    int num_sent;
+
+    lp.type = SC_LOGIN;
+    lp.id = u.GetId();
+    lp.x = u.GetXpos();
+    lp.y = u.GetYpos();
+
+
+    int retval = send(soc, (char*)&lp, sizeof(sc_login_packet), 0);
+
+    cout << "send_Login_packet : 전송대상"<< soc <<" "<< lp.id <<" " << lp.x << " " << lp.y << " " << "(" << retval << " bytes)\n";
+}
 
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
@@ -287,16 +302,25 @@ int main()
 
         //유저의 좌표를 서버에 보내고
         send_first_pos(client_sock, user);
-        //브로드 캐스트
+        //Sleep(400);
+
 
         cout << "현재 접속한 User: ";
-        for (auto u : users)
+        for (const User u : users)
             cout << u.GetId() << "->";
-
-        for (User u : users)
-        {
-            //send_Login_packet(u);
+        cout << endl;
+        //새로운 유저가 접속한 것을 다른 클라이언트들에게 알림(id, 좌표 전송)
+        for (User u : users){
+            if (u.GetId() != user.GetId()) {
+                send_Login_packet((SOCKET)u.GetId(), user);
+                send_Login_packet((SOCKET)u.GetId(), user);
+                send_Login_packet((SOCKET)u.GetId(), user);
+                send_Login_packet(client_sock, u);
+                send_Login_packet(client_sock, u);
+                send_Login_packet(client_sock, u);
+            }
         }
+
 
         if (hThread == NULL) { closesocket(client_sock); }
         else {

@@ -28,6 +28,8 @@ using namespace std;
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
+constexpr char SC_LOGIN = 2;
+
 enum KeyInput
 {
 	KEY_UP_DOWN,
@@ -46,6 +48,14 @@ typedef struct position_packet
 	int x;
 	int y;
 }position_packet;
+
+typedef struct sc_login_packet
+{
+	char type;
+	int id;
+	int x;
+	int y;
+}sc_login_packet;
 
 //박스 랜덤 색
 uniform_int_distribution<> uiNUM(50, 255);
@@ -67,7 +77,7 @@ void moveCamera();
 void handleKeyboard(int key, int x, int y);
 void handleKeyboardUp(int key, int x, int y);
 void myInit(void);
-void processdata(WSABUF wsabuf);
+//void processdata(WSABUF wsabuf);
 void DoTimer4RecvServer(int n);
 void BuildBoard(int argc, char** argv);
 void DataToServer();
@@ -336,15 +346,15 @@ typedef struct clients_info
 	int y;
 }clients_info;
 
-typedef struct move_packet
-{
-	int id;
-	int type;
-	int x;
-	int y;
-	int key;
-
-}move_packet;
+//typedef struct move_packet
+//{
+//	int id;
+//	int type;
+//	int x;
+//	int y;
+//	int key;
+//
+//}move_packet;
 
 //에러 메시지
 void error_display(const char* msg, int err_no)
@@ -402,6 +412,7 @@ void myDisplay(void)
 	for (User user : users) {
 		user.show();
 	}
+
 	glFlush();
 }
 
@@ -468,11 +479,19 @@ void myInit(void)
 void processdata(char* buf) {
 
 	switch (buf[0]) {
+		//초기 플레이어의 좌표를 받는 패킷
 	case SC_POS: {
 		position_packet* pp = reinterpret_cast<position_packet*>(buf);
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
 		cout << player.GetXpos() << " " << player.GetYpos() << endl;
+		break;
+	}
+	case SC_LOGIN: {
+		sc_login_packet* lp = reinterpret_cast<sc_login_packet*>(buf);
+		User u(lp->id, lp->x, lp->y, 20.f);
+		users.push_back(u);
+		cout << "새로운 유저 추가" << endl;
 		break;
 	}
 	}
@@ -521,7 +540,6 @@ void processdata(char* buf) {
 //Timer로 Rcev 함수 실행
 void DoTimer4RecvServer(int n) {
 
-	move_packet mp;
 	int retval;
 
 	char buf[MAX_BUFFER];
@@ -530,6 +548,8 @@ void DoTimer4RecvServer(int n) {
 		DWORD num_recv;
 		DWORD flag = 0;
 		retval = recv(serverSocket, (char*)&buf, MAX_BUFFER, 0);
+		if (retval != -1)
+			cout << "데이터 수신	" << retval << endl;
 		if (retval == -1)
 			break;
 		else if (WSAGetLastError() != WSAEWOULDBLOCK) {
@@ -540,7 +560,7 @@ void DoTimer4RecvServer(int n) {
 
 
 	glutPostRedisplay();
-	glutTimerFunc(5, DoTimer4RecvServer, 1);
+	glutTimerFunc(1, DoTimer4RecvServer, 1);
 
 }
 
@@ -558,7 +578,7 @@ void BuildBoard(int argc, char** argv)
 	glTranslatef(0, 0, 0.0f);
 
 	//Recv 반복
-	glutTimerFunc(5, DoTimer4RecvServer, 1);
+	glutTimerFunc(1, DoTimer4RecvServer, 1);
 
 	myInit();
 	glutMainLoop();
