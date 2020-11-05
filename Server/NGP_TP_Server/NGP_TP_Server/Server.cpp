@@ -250,8 +250,12 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             position_packet* mp = reinterpret_cast<position_packet*>(buf);
             int x = mp->x;
             int y = mp->y;
-            for (User u : users)
+            for (User &u : users)
             {
+                if ((int)client_sock == u.GetId()) {
+                    u.SetXpos(mp->x);
+                    u.SetYpos(mp->y);
+                }
                 if((int)client_sock != u.GetId())
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
             }

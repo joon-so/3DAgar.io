@@ -514,14 +514,14 @@ void processdata(char* buf) {
 		position_packet* pp = reinterpret_cast<position_packet*>(buf);
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
-		//cout << player.GetXpos() << " " << player.GetYpos() << endl;
+		cout << player.GetXpos() << " " << player.GetYpos() << endl;
 		break;
 	}
 	case SC_LOGIN: {
 		sc_login_packet* lp = reinterpret_cast<sc_login_packet*>(buf);
 		User u(lp->id, lp->x, lp->y, 20.f);
 		users.push_back(u);
-		cout << "새로운 유저 추가" << endl;
+		cout << "새로운 유저 추가" <<  lp->id <<" "<< lp->x << " " << lp->y <<endl;
 		break;
 	}
 	case SC_USER_MOVE: {
