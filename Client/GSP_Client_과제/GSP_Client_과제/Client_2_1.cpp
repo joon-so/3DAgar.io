@@ -13,7 +13,7 @@ using namespace std;
 
 #define MAX_BUFFER 1024
 #define SERVER_PORT 9000
-#define SERVER_IP "127.0.0.1" // 자기 자신의 주소는 항상 127.0.0.1
+#define SERVER_IP "192.168.35.184" // 자기 자신의 주소는 항상 127.0.0.1
 
 #define w_width		800		//윈도우창 가로 크기
 #define w_height	400		//윈도우창 세로 크기
@@ -24,6 +24,7 @@ using namespace std;
 #define ITEM_TYPE	flase	//속도향상(false), 스턴(true)
 #define USERLOGIN	false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE		false	//패배(true) 승리(false)
+#define SEND_TERM	10
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -108,6 +109,7 @@ class Player {
 	float size = 20.f;
 	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
 	Key move_direction;
+	int term = 0;
 
 public:
 	Player() {
@@ -124,20 +126,38 @@ public:
 
 		//플레이어 이동
 		if (move_direction.Arrow_Up) {
+			term++;
 			y += MOVE_SPEED;
-			DataToServer();
+			//DataToServer();
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
 		}
 		if (move_direction.Arrow_Down) {
+			term++;
 			y -= MOVE_SPEED;
-			DataToServer();
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
+
 		}
 		if (move_direction.Arrow_Left) {
+			term++;
 			x -= MOVE_SPEED;
-			DataToServer();
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
 		}
 		if (move_direction.Arrow_Right) {
+			term++;
 			x += MOVE_SPEED;
-			DataToServer();
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
 		}
 
 		//맵 충돌처리
@@ -508,9 +528,10 @@ void processdata(char* buf) {
 		sc_user_move_packet* ump = reinterpret_cast<sc_user_move_packet*>(buf);
 		for (User& u : users)
 		{
-			if(u.GetId()==ump->id)
+			if (u.GetId() == ump->id) {
 				u.SetXpos(ump->x);
 				u.SetYpos(ump->y);
+			}
 		}
 	}
 	}
