@@ -16,10 +16,19 @@ constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
 constexpr char SC_LOGIN = 2;
+constexpr char SC_USER_MOVE = 3;
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
+
+typedef struct sc_user_move_packet
+{
+    char type;
+    int id;
+    int x;
+    int y;
+}sc_user_move_packet;
 
 typedef struct position_packet
 {
@@ -184,21 +193,37 @@ void send_first_pos(SOCKET soc, User user)
     cout << "send_first_pos : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 }
 
-void send_Login_packet(SOCKET soc, User u)
+void send_Login_packet(SOCKET soc, User user)
 {
     sc_login_packet lp;
     char buf[MAX_BUFFER];
     int num_sent;
 
     lp.type = SC_LOGIN;
-    lp.id = u.GetId();
-    lp.x = u.GetXpos();
-    lp.y = u.GetYpos();
+    lp.id = user.GetId();
+    lp.x = user.GetXpos();
+    lp.y = user.GetYpos();
 
 
     int retval = send(soc, (char*)&lp, sizeof(sc_login_packet), 0);
 
     cout << "send_Login_packet : 전송대상"<< soc <<" "<< lp.id <<" " << lp.x << " " << lp.y << " " << "(" << retval << " bytes)\n";
+}
+
+void send_user_move_packet(SOCKET soc, int id, int x, int y)
+{
+    sc_user_move_packet ump;
+    char buf[MAX_BUFFER];
+    int num_sent;
+
+    ump.type = SC_USER_MOVE;
+    ump.id = id;
+    ump.x = x;
+    ump.y = y;
+
+    int retval = send(soc, (char*)&ump, sizeof(sc_user_move_packet), 0);
+
+    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
 }
 
 // 클라이언트와 데이터 통신
@@ -225,8 +250,13 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             position_packet* mp = reinterpret_cast<position_packet*>(buf);
             int x = mp->x;
             int y = mp->y;
+            for (User u : users)
+            {
+                if((int)client_sock != u.GetId())
+                    send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
+            }
 
-            cout << client_sock << " x = " << x << " y = " << y << endl;
+            //cout << client_sock << " x = " << x << " y = " << y << endl;
             break;
         }
         default:
@@ -309,14 +339,12 @@ int main()
         for (const User u : users)
             cout << u.GetId() << "->";
         cout << endl;
+        //Sleep을 걸어야만 클라이언트가 제대로 수신 받음...무슨 일인가...ㅅㅂ
+        Sleep(500);
         //새로운 유저가 접속한 것을 다른 클라이언트들에게 알림(id, 좌표 전송)
         for (User u : users){
             if (u.GetId() != user.GetId()) {
                 send_Login_packet((SOCKET)u.GetId(), user);
-                send_Login_packet((SOCKET)u.GetId(), user);
-                send_Login_packet((SOCKET)u.GetId(), user);
-                send_Login_packet(client_sock, u);
-                send_Login_packet(client_sock, u);
                 send_Login_packet(client_sock, u);
             }
         }

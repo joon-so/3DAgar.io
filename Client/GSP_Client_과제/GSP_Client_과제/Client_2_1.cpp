@@ -29,6 +29,8 @@ constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
 constexpr char SC_LOGIN = 2;
+constexpr char SC_USER_MOVE = 3;
+
 
 enum KeyInput
 {
@@ -41,6 +43,14 @@ enum KeyInput
 	KEY_LEFT_UP,
 	KEY_RIGHT_UP
 };
+
+typedef struct sc_user_move_packet
+{
+	char type;
+	int id;
+	int x;
+	int y;
+}sc_user_move_packet;
 
 typedef struct position_packet
 {
@@ -441,7 +451,7 @@ void handleKeyboard(int key, int x, int y)
 		player.SetMoveDirection(KEY_RIGHT_DOWN);
 		break;
 	}
-	cout << key << endl;
+	//cout << key << endl;
 	glutPostRedisplay();
 }
 
@@ -484,7 +494,7 @@ void processdata(char* buf) {
 		position_packet* pp = reinterpret_cast<position_packet*>(buf);
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
-		cout << player.GetXpos() << " " << player.GetYpos() << endl;
+		//cout << player.GetXpos() << " " << player.GetYpos() << endl;
 		break;
 	}
 	case SC_LOGIN: {
@@ -493,6 +503,15 @@ void processdata(char* buf) {
 		users.push_back(u);
 		cout << "새로운 유저 추가" << endl;
 		break;
+	}
+	case SC_USER_MOVE: {
+		sc_user_move_packet* ump = reinterpret_cast<sc_user_move_packet*>(buf);
+		for (User& u : users)
+		{
+			if(u.GetId()==ump->id)
+				u.SetXpos(ump->x);
+				u.SetYpos(ump->y);
+		}
 	}
 	}
 	//move_packet mp;
@@ -596,7 +615,7 @@ void DataToServer() {
 
 	int retval = send(serverSocket, (char*)&mp,sizeof(position_packet),0);
 
-	cout << "Sent : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
+	//cout << "Sent : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 
 }
 
