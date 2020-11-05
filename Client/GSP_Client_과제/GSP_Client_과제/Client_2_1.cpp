@@ -63,7 +63,7 @@ constexpr int LOGOUT = 4;
 
 void error_display(const char* msg, int err_no);
 void myDisplay(void);
-void moveCamera(int key);
+void moveCamera();
 void handleKeyboard(int key, int x, int y);
 void handleKeyboardUp(int key, int x, int y);
 void myInit(void);
@@ -84,13 +84,14 @@ typedef struct Key {
 class Player {
 	int x;
 	int y;
+	int prev_x, prev_y;
 	float size = 20.f;
 	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
 	Key move_direction;
 
 public:
 	Player() {
-		x = 400, y = 200;
+		prev_x = 400, prev_y = 200;
 		//size = 20.f;
 		//prev_size = 20.f;
 	}
@@ -101,6 +102,7 @@ public:
 		glBegin(GL_POLYGON);
 		glColor3f(1.0, 0.0, 0.0);
 
+		//플레이어 이동
 		if (move_direction.Arrow_Up) {
 			y += MOVE_SPEED;
 			DataToServer();
@@ -148,6 +150,7 @@ public:
 			move_direction.Arrow_Down = false;
 		}
 
+		//플레이어 그리기
 		for (int i = 0; i < 360; i++)
 		{
 			float angle = i * 3.141592 / 180;
@@ -165,6 +168,14 @@ public:
 	//y좌표 설정
 	void SetYpos(int ypos) {
 		y = ypos;
+	}
+	//prev_x좌표 설정
+	void SetPrevXpos(int xpos) {
+		prev_x = xpos;
+	}
+	//Prev_y좌표 설정
+	void SetPrevYpos(int ypos) {
+		prev_y = ypos;
 	}
 	//size 설정
 	void SetSize(float newsize) {
@@ -200,6 +211,14 @@ public:
 	//y좌표 리턴
 	int GetYpos() {
 		return y;
+	}
+	//x좌표 리턴
+	int GetPrevXpos() {
+		return prev_x;
+	}
+	//y좌표 리턴
+	int GetPrevYpos() {
+		return prev_y;
 	}
 	//size 리턴
 	float GetSize() {
@@ -271,14 +290,6 @@ public:
 			}
 		}
 	}
-
-	//void MapCrushCheck()
-	//{
-	//	if (50 * MAP_SIZE < x + size | 50 * MAP_SIZE < y + size)
-	//		size = size / 2.f;
-	//	else if (-50 * MAP_SIZE > x - size | -50 * MAP_SIZE > y - size)
-	//		size = size / 2.f;
-	//}
 
 	//x좌표 설정
 	void SetXpos(int xpos) {
@@ -381,45 +392,24 @@ void myDisplay(void)
 	//맵생성
 	DrawMap();
 	
-	//redBox(pox, poy);
-
+	//플레이어 출력
 	player.show();
 
-	if (player.GetKeybordInput().Arrow_Up) {
-		glTranslatef(0, -MOVE_SPEED, 0.0f);
-	}
-	if (player.GetKeybordInput().Arrow_Down) {
-		glTranslatef(0, +MOVE_SPEED, 0.0f);
-	}
-	if (player.GetKeybordInput().Arrow_Left) {
-		glTranslatef(MOVE_SPEED, 0, 0.0f);
-	}
-	if (player.GetKeybordInput().Arrow_Right) {
-		glTranslatef(-MOVE_SPEED, 0, 0.0f);
-	}
+	//카메라 움직임
+	moveCamera();
 
 	//다른 클라이언트 업데이트
 	for (User user : users) {
 		user.show();
 	}
-
 	glFlush();
 }
 
-void moveCamera(int key)
+void moveCamera()
 {
-	if (player.GetKeybordInput().Arrow_Up) {
-		glTranslatef(0, MOVE_SPEED, 0.0f);
-	}
-	if (player.GetKeybordInput().Arrow_Down) {
-		glTranslatef(0, -MOVE_SPEED, 0.0f);
-	}
-	if (player.GetKeybordInput().Arrow_Left) {
-		glTranslatef(-MOVE_SPEED, 0, 0.0f);
-	}
-	if (player.GetKeybordInput().Arrow_Right) {
-		glTranslatef(MOVE_SPEED, 0, 0.0f);
-	}
+	glTranslatef(player.GetPrevXpos() - player.GetXpos(), player.GetPrevYpos() - player.GetYpos(), 0.0f);
+	player.SetPrevXpos(player.GetXpos());
+	player.SetPrevYpos(player.GetYpos());
 }
 
 void handleKeyboard(int key, int x, int y)
