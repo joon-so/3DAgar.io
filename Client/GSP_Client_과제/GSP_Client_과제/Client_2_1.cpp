@@ -395,6 +395,10 @@ class Feed {
 	int color_b = uiNUM(dre);
 
 public:
+	Feed() {
+		x = enemy_position_NUM(dre);
+		y = enemy_position_NUM(dre);
+	}
 	//서버에서 상대방 받아올때 사용
 	Feed(int x, int y) : x{ x }, y{ y } {}
 
@@ -411,13 +415,21 @@ public:
 
 		glEnd();
 	}
+	//x좌표 설정
+	int SetXpos(int xpos) {
+		x = xpos;
+	}
+	//y좌표 설정
+	int SetYpos(int ypos) {
+		y = ypos;
+	}
 };
 
 
 //User Vector
 vector<User> users;
 Player player;				//player 생성
-Feed feed[ENEMY_NUM];				//먹이 생성
+Feed feed[ENEMY_NUM];		//먹이 생성
 
 //에러 메시지
 void error_display(const char* msg, int err_no)
@@ -465,6 +477,9 @@ void myDisplay(void)
 	//맵생성
 	DrawMap();
 	
+	for (int i = 0; i < ENEMY_NUM; i++)
+		feed[i].show();
+
 	//플레이어 출력
 	player.show();
 
