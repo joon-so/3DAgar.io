@@ -88,7 +88,6 @@ void moveCamera();
 void handleKeyboard(int key, int x, int y);
 void handleKeyboardUp(int key, int x, int y);
 void myInit(void);
-//void processdata(WSABUF wsabuf);
 void DoTimer4RecvServer(int n);
 void BuildBoard(int argc, char** argv);
 void DataToServer();
@@ -389,23 +388,6 @@ public:
 vector<User> users;
 Player player;				//player 생성
 
-typedef struct clients_info
-{
-	SOCKET id;
-	int x;
-	int y;
-}clients_info;
-
-//typedef struct move_packet
-//{
-//	int id;
-//	int type;
-//	int x;
-//	int y;
-//	int key;
-//
-//}move_packet;
-
 //에러 메시지
 void error_display(const char* msg, int err_no)
 {
@@ -555,45 +537,7 @@ void processdata(char* buf) {
 		}
 	}
 	}
-	//move_packet mp;
-
-	//mp = *(move_packet*)wsabuf.buf;
-	//cout << "Received : " << mp.x << " " << mp.y << " " << mp.id << " " << mp.type << endl;
-
-	//cout << "Clients :";
-	//for (User u : users)
-	//	cout << u.GetId() << " ";
-	//if (mp.type == LOGIN)
-	//{
-	//	User user(mp.id,0,0,0.f);
-	//	users.push_back(user);
-	//}
-	//else if (mp.type == MOVE_Me) {
-	//	player.SetXpos(mp.x);
-	//	player.SetYpos(mp.y);
-	//}
-	//else if (mp.type == MOVE) {
-	//	bool find = false;
-
-	//	for (User& u : users)
-	//		if (u.GetId() == mp.id) {
-	//			u.SetXpos(mp.x);
-	//			u.SetYpos(mp.y);
-	//			find = TRUE;
-	//		}
-
-	//	if (find == false) {
-	//		User user(mp.id, mp.x, mp.y, 20.f);
-	//		users.push_back(user);
-	//	}
-
-	//}
-	//else if (mp.type == LOGOUT) {
-	//	for (User u : users)
-	//		if (u.GetId() == mp.id) {
-	//			users.erase(remove(users.begin(), users.end(), u), users.end());
-	//		}
-	//}
+	
 	glutPostRedisplay();
 }
 
