@@ -19,12 +19,13 @@ using namespace std;
 #define w_height	400		//윈도우창 세로 크기
 #define MOVE_SPEED	2		//카메라 움직이는 기본 속도
 #define MAP_SIZE	100.f	//맵 한칸당 크기
-#define ENEMY_COUNT	100		//먹이 개수
+#define ENEMY_NUM   100		//먹이 개수
 #define ITEM_COUNT	20		//아이템 개수
 #define ITEM_TYPE	flase	//속도향상(false), 스턴(true)
 #define USERLOGIN	false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE		false	//패배(true) 승리(false)
 #define SEND_TERM	10
+
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -384,9 +385,39 @@ public:
 	};
 };
 
+class Feed {
+	int x;
+	int y;
+	float size = 5.f;
+
+	int color_r = uiNUM(dre);
+	int color_g = uiNUM(dre);
+	int color_b = uiNUM(dre);
+
+public:
+	//서버에서 상대방 받아올때 사용
+	Feed(int x, int y) : x{ x }, y{ y } {}
+
+	void show() {
+		glBegin(GL_POLYGON);
+		glColor3ub(color_r, color_g, color_b);
+		for (int i = 0; i < 360; i++)
+		{
+			float angle = i * 3.141592 / 180;
+			float ax = size * cos(angle);
+			float ay = size * sin(angle);
+			glVertex2f(x + ax, y + ay);
+		}
+
+		glEnd();
+	}
+};
+
+
 //User Vector
 vector<User> users;
 Player player;				//player 생성
+Feed feed[ENEMY_NUM];				//먹이 생성
 
 //에러 메시지
 void error_display(const char* msg, int err_no)
