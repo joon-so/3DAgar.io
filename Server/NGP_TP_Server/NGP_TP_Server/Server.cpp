@@ -11,13 +11,16 @@ using namespace std;
 #define SERVERPORT 9000
 #define MAX_BUFFER 1024
 #define MAP_SIZE	100.f	//맵 한칸당 크기
-#define ENEMY_NUM   100
+#define FEED_MAX_NUM   500
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
 
 constexpr char SC_LOGIN = 2;
 constexpr char SC_USER_MOVE = 3;
+
+constexpr char SC_ALL_FEED = 4;
+
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
@@ -27,30 +30,30 @@ typedef struct sc_user_move_packet
 {
     char type;
     int id;
-    int x;
-    int y;
+    short x;
+    short y;
 }sc_user_move_packet;
 
 typedef struct position_packet
 {
     char type;
-    int x;
-    int y;
+    short x;
+    short y;
 }position_packet;
 
 typedef struct sc_login_packet
 {
     char type;
     int id;
-    int x;
-    int y;
+    short x;
+    short y;
 }sc_login_packet;
 
 
 class User {
     int id;
-    int x;
-    int y;
+    short x;
+    short y;
     float size;
 
 public:
@@ -95,11 +98,11 @@ public:
     }
 
     //x좌표 설정
-    void SetXpos(int xpos) {
+    void SetXpos(short xpos) {
         x = xpos;
     }
     //y좌표 설정
-    void SetYpos(int ypos) {
+    void SetYpos(short ypos) {
         y = ypos;
     }
     //size 설정
@@ -107,11 +110,11 @@ public:
         size = newsize;
     }
     //x좌표 리턴
-    int GetXpos() {
+    short GetXpos() {
         return x;
     }
     //y좌표 리턴
-    int GetYpos() {
+    short GetYpos() {
         return y;
     }
     //size 리턴
@@ -127,10 +130,11 @@ public:
         return GetId() == rhs.GetId();
     };
 };
+vector<User> users;
 
 class Feed {
-    int x;
-    int y;
+    short x;
+    short y;
     float size = 5.f;
 
 public:
@@ -141,50 +145,53 @@ public:
 
     //다른 원과의 거리 측정
     float MeasureDistance(User user) {
-    	float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
-    	return distance;
+        float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
+        return distance;
     }
-    
+
     void CrushCheck(User user) {
-    	// 충돌 체크 후 작은쪽이 죽음 후 크기 커짐
-    	if (size > user.GetSize()) {
-    		if (MeasureDistance(user) < size) {
-    			size += user.GetSize() / 2;
-    		}
-    	}
-    
-    	// 충돌체크 후 다시 먹힐경우 다시 위치 조정
-    	else if (size < user.GetSize()) {
-    		if (MeasureDistance(user) < user.GetSize()) {
-    			user.SetSize(user.GetSize() + size / 2);
-    			x = enemy_position_NUM(dre);
-    			y = enemy_position_NUM(dre);
-    			cout << user.GetSize() << endl;
-    		}
-    	}
+        // 충돌 체크 후 작은쪽이 죽음 후 크기 커짐
+        if (size > user.GetSize()) {
+            if (MeasureDistance(user) < size) {
+                size += user.GetSize() / 2;
+            }
+        }
+
+        // 충돌체크 후 다시 먹힐경우 다시 위치 조정
+        else if (size < user.GetSize()) {
+            if (MeasureDistance(user) < user.GetSize()) {
+                user.SetSize(user.GetSize() + size / 2);
+                x = enemy_position_NUM(dre);
+                y = enemy_position_NUM(dre);
+                cout << user.GetSize() << endl;
+            }
+        }
     }
 
     //x좌표 설정
-    int SetXpos(int xpos) {
+    short SetXpos(short xpos) {
         x = xpos;
     }
     //y좌표 설정
-    int SetYpos(int ypos) {
+    short SetYpos(short ypos) {
         y = ypos;
     }
     //x좌표 리턴
-    int GetXpos() {
+    short GetXpos() {
         return x;
     }
     //y좌표 리턴
-    int GetYpos() {
+    short GetYpos() {
         return y;
     }
 };
+Feed feed[FEED_MAX_NUM];
 
-
-vector<User> users;
-Feed feed[ENEMY_NUM];
+typedef struct sc_all_feed_packet
+{
+    char type;
+    Feed feeds[FEED_MAX_NUM];
+}sc_all_feed_packet;
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(const char* msg)
@@ -288,6 +295,24 @@ void send_user_move_packet(SOCKET soc, int id, int x, int y)
     retval = send(soc, (char*)&size, sizeof(int), 0);
 
     retval = send(soc, (char*)&ump, sizeof(sc_user_move_packet), 0);
+
+    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
+}
+
+void send_all_feed_data(SOCKET soc)
+{
+    sc_all_feed_packet afp;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    afp.type = SC_ALL_FEED;
+    memcpy(afp.feeds, feed, sizeof(feed));
+
+    int size = sizeof(sc_all_feed_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&afp, sizeof(sc_all_feed_packet), 0);
 
     //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
 }
@@ -410,6 +435,7 @@ int main()
         for (const User u : users)
             cout << u.GetId() << "->";
         cout << endl;
+
         //새로운 유저가 접속한 것을 다른 클라이언트들에게 알림(id, 좌표 전송)
         for (User u : users){
             if (u.GetId() != user.GetId()) {
@@ -417,6 +443,10 @@ int main()
                 send_Login_packet(client_sock, u);
             }
         }
+
+        //접속한 유저에게 초기데이터 (먹이, 아이템, 장애물) 자료구조 전송
+        //먹이 배열 전송
+        send_all_feed_data(client_sock);
 
 
         if (hThread == NULL) { closesocket(client_sock); }

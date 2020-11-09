@@ -11,15 +11,15 @@
 
 using namespace std;
 
-#define MAX_BUFFER 1024
+#define MAX_BUFFER 8192
 #define SERVER_PORT 9000
 #define SERVER_IP "127.0.0.1" // 자기 자신의 주소는 항상 127.0.0.1
 
-#define w_width		800		//윈도우창 가로 크기
-#define w_height	400		//윈도우창 세로 크기
+#define w_width		1200		//윈도우창 가로 크기
+#define w_height	800		//윈도우창 세로 크기
 #define MOVE_SPEED	2		//카메라 움직이는 기본 속도
-#define MAP_SIZE	100.f	//맵 한칸당 크기
-#define ENEMY_NUM   100		//먹이 개수
+#define MAP_SIZE	10.f	//맵 한칸당 크기
+#define FEED_MAX_NUM   500		//먹이 개수
 #define ITEM_COUNT	20		//아이템 개수
 #define ITEM_TYPE	flase	//속도향상(false), 스턴(true)
 #define USERLOGIN	false	//유저 로그아웃(false), 유저 로그인(true)
@@ -32,6 +32,8 @@ constexpr char CS_MOVE = 1;
 
 constexpr char SC_LOGIN = 2;
 constexpr char SC_USER_MOVE = 3;
+
+constexpr char SC_ALL_FEED = 4;
 
 
 enum KeyInput
@@ -46,28 +48,6 @@ enum KeyInput
 	KEY_RIGHT_UP
 };
 
-typedef struct sc_user_move_packet
-{
-	char type;
-	int id;
-	int x;
-	int y;
-}sc_user_move_packet;
-
-typedef struct position_packet
-{
-	char type;
-	int x;
-	int y;
-}position_packet;
-
-typedef struct sc_login_packet
-{
-	char type;
-	int id;
-	int x;
-	int y;
-}sc_login_packet;
 
 //박스 랜덤 색
 uniform_int_distribution<> uiNUM(50, 255);
@@ -94,6 +74,31 @@ void BuildBoard(int argc, char** argv);
 void DataToServer();
 void DrawLine(float start_x, float start_y, float end_x, float end_y);
 void DrawMap();
+
+
+typedef struct sc_user_move_packet
+{
+	char type;
+	int id;
+	short x;
+	short y;
+}sc_user_move_packet;
+
+typedef struct position_packet
+{
+	char type;
+	short x;
+	short y;
+}position_packet;
+
+typedef struct sc_login_packet
+{
+	char type;
+	int id;
+	short x;
+	short y;
+}sc_login_packet;
+
 
 int recvn(SOCKET s, char* buf, int len, int flags)
 {
@@ -123,13 +128,13 @@ typedef struct Key {
 };
 
 class Player {
-	int x;
-	int y;
-	int prev_x, prev_y;
+	short x;
+	short y;
+	short prev_x, prev_y;
 	float size = 20.f;
 	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
 	Key move_direction;
-	int term = 0;
+	short term = 0;
 
 public:
 	Player() {
@@ -137,7 +142,7 @@ public:
 		//size = 20.f;
 		//prev_size = 20.f;
 	}
-	Player(int x, int y, float size) :x{ x }, y{ y }, size{ size } {}
+	Player(short x, short y, float size) :x{ x }, y{ y }, size{ size } {}
 
 	//화면에 사용자 출력
 	void show() {
@@ -222,19 +227,19 @@ public:
 	}
 
 	//x좌표 설정
-	void SetXpos(int xpos) {
+	void SetXpos(short xpos) {
 		x = xpos;
 	}
 	//y좌표 설정
-	void SetYpos(int ypos) {
+	void SetYpos(short ypos) {
 		y = ypos;
 	}
 	//prev_x좌표 설정
-	void SetPrevXpos(int xpos) {
+	void SetPrevXpos(short xpos) {
 		prev_x = xpos;
 	}
 	//Prev_y좌표 설정
-	void SetPrevYpos(int ypos) {
+	void SetPrevYpos(short ypos) {
 		prev_y = ypos;
 	}
 	//size 설정
@@ -265,19 +270,19 @@ public:
 			move_direction.Arrow_Right = false;
 	}
 	//x좌표 리턴
-	int GetXpos() {
+	short GetXpos() {
 		return x;
 	}
 	//y좌표 리턴
-	int GetYpos() {
+	short GetYpos() {
 		return y;
 	}
 	//x좌표 리턴
-	int GetPrevXpos() {
+	short GetPrevXpos() {
 		return prev_x;
 	}
 	//y좌표 리턴
-	int GetPrevYpos() {
+	short GetPrevYpos() {
 		return prev_y;
 	}
 	//size 리턴
@@ -296,8 +301,8 @@ public:
 
 class User {
 	int id;
-	int x;
-	int y;
+	short x;
+	short y;
 	float size;
 
 public:
@@ -307,7 +312,7 @@ public:
 		size = 20.f;
 		id = 0;
 	}
-	User(int id, int x, int y, float size) :id{ id }, x{ x }, y{ y }, size{ size } {}
+	User(int id, short x, short y, float size) :id{ id }, x{ x }, y{ y }, size{ size } {}
 
 	//화면에 사용자 출력
 	void show() {
@@ -352,11 +357,11 @@ public:
 	}
 
 	//x좌표 설정
-	void SetXpos(int xpos) {
+	void SetXpos(short xpos) {
 		x = xpos;
 	}
 	//y좌표 설정
-	void SetYpos(int ypos) {
+	void SetYpos(short ypos) {
 		y = ypos;
 	}
 	//size 설정
@@ -364,11 +369,11 @@ public:
 		size = newsize;
 	}
 	//x좌표 리턴
-	int GetXpos() {
+	short GetXpos() {
 		return x;
 	}
 	//y좌표 리턴
-	int GetYpos() {
+	short GetYpos() {
 		return y;
 	}
 	//size 리턴
@@ -386,8 +391,8 @@ public:
 };
 
 class Feed {
-	int x;
-	int y;
+	short x;
+	short y;
 	float size = 5.f;
 
 	int color_r = uiNUM(dre);
@@ -400,7 +405,7 @@ public:
 		y = enemy_position_NUM(dre);
 	}
 	//서버에서 상대방 받아올때 사용
-	Feed(int x, int y) : x{ x }, y{ y } {}
+	Feed(short x, short y) : x{ x }, y{ y } {}
 
 	void show() {
 		glBegin(GL_POLYGON);
@@ -416,20 +421,27 @@ public:
 		glEnd();
 	}
 	//x좌표 설정
-	int SetXpos(int xpos) {
+	short SetXpos(short xpos) {
 		x = xpos;
 	}
 	//y좌표 설정
-	int SetYpos(int ypos) {
+	short SetYpos(short ypos) {
 		y = ypos;
 	}
 };
 
-
 //User Vector
 vector<User> users;
 Player player;				//player 생성
-Feed feed[ENEMY_NUM];		//먹이 생성
+Feed feed[FEED_MAX_NUM];		//먹이 생성
+
+
+typedef struct sc_all_feed_packet
+{
+	char type;
+	Feed feeds[FEED_MAX_NUM];
+}sc_all_feed_packet;
+
 
 //에러 메시지
 void error_display(const char* msg, int err_no)
@@ -477,8 +489,8 @@ void myDisplay(void)
 	//맵생성
 	DrawMap();
 	
-	for (int i = 0; i < ENEMY_NUM; i++)
-		feed[i].show();
+	//for (int i = 0; i < FEED_MAX_NUM; i++)
+	//	feed[i].show();
 
 	//플레이어 출력
 	player.show();
@@ -577,7 +589,7 @@ void myInit(void)
 	glPointSize(4.0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0.0, 800.0, 0.0, 400.0);
+	gluOrtho2D(0.0, w_width, 0.0, w_height);
 }
 
 //서버에서 온 데이터 타입별로 처리
@@ -608,6 +620,14 @@ void processdata(char* buf) {
 				u.SetYpos(ump->y);
 			}
 		}
+		break;
+	}
+	case SC_ALL_FEED: {
+		sc_all_feed_packet* afp = reinterpret_cast<sc_all_feed_packet*>(buf);
+		
+		memcpy(feed, afp->feeds, sizeof(feed));
+
+		break;
 	}
 	}
 	
