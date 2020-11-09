@@ -455,6 +455,31 @@ void moveCamera()
 	player.SetPrevYpos(player.GetYpos());
 }
 
+DWORD WINAPI Chatting(LPVOID arg)
+{
+	char chat[100];
+	ZeroMemory(&chat, sizeof(chat));
+
+	cout << "Chatting: ";
+	cin >> chat;
+
+	cout << chat << endl;
+	cout << "쓰레드 종료" << endl;
+	return 0;
+}
+
+void chattingFunc()
+{
+	int i = 0;
+	HANDLE hTread;
+	hTread = CreateThread(NULL, 0, Chatting,
+		0, 0, NULL);
+	if (hTread == NULL) { cout << "채팅 함수 실패" << endl; }
+	else {
+		CloseHandle(hTread);
+	}
+}
+
 void handleKeyboard(int key, int x, int y)
 {
 	switch (key)
@@ -472,6 +497,8 @@ void handleKeyboard(int key, int x, int y)
 	case GLUT_KEY_RIGHT:
 		player.SetMoveDirection(KEY_RIGHT_DOWN);
 		break;
+	case GLUT_KEY_F1:
+		chattingFunc();
 	}
 	//cout << key << endl;
 	glutPostRedisplay();
