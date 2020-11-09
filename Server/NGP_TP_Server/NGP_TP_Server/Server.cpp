@@ -11,6 +11,7 @@ using namespace std;
 #define SERVERPORT 9000
 #define MAX_BUFFER 1024
 #define MAP_SIZE	100.f	//맵 한칸당 크기
+#define ENEMY_NUM   100
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -127,7 +128,63 @@ public:
     };
 };
 
+class Feed {
+    int x;
+    int y;
+    float size = 5.f;
+
+public:
+    Feed() {
+        x = enemy_position_NUM(dre);
+        y = enemy_position_NUM(dre);
+    }
+
+    //다른 원과의 거리 측정
+    float MeasureDistance(User user) {
+    	float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
+    	return distance;
+    }
+    
+    void CrushCheck(User user) {
+    	// 충돌 체크 후 작은쪽이 죽음 후 크기 커짐
+    	if (size > user.GetSize()) {
+    		if (MeasureDistance(user) < size) {
+    			size += user.GetSize() / 2;
+    		}
+    	}
+    
+    	// 충돌체크 후 다시 먹힐경우 다시 위치 조정
+    	else if (size < user.GetSize()) {
+    		if (MeasureDistance(user) < user.GetSize()) {
+    			user.SetSize(user.GetSize() + size / 2);
+    			x = enemy_position_NUM(dre);
+    			y = enemy_position_NUM(dre);
+    			cout << user.GetSize() << endl;
+    		}
+    	}
+    }
+
+    //x좌표 설정
+    int SetXpos(int xpos) {
+        x = xpos;
+    }
+    //y좌표 설정
+    int SetYpos(int ypos) {
+        y = ypos;
+    }
+    //x좌표 리턴
+    int GetXpos() {
+        return x;
+    }
+    //y좌표 리턴
+    int GetYpos() {
+        return y;
+    }
+};
+
+
 vector<User> users;
+Feed feed[ENEMY_NUM];
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(const char* msg)
