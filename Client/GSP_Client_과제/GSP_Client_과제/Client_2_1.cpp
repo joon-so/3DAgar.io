@@ -18,13 +18,13 @@ using namespace std;
 #define w_width		1200		//윈도우창 가로 크기
 #define w_height	800		//윈도우창 세로 크기
 #define MOVE_SPEED	2		//카메라 움직이는 기본 속도
-#define MAP_SIZE	10.f	//맵 한칸당 크기
+#define MAP_SIZE	50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM   500		//먹이 개수
 #define ITEM_COUNT	20		//아이템 개수
 #define ITEM_TYPE	flase	//속도향상(false), 스턴(true)
 #define USERLOGIN	false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE		false	//패배(true) 승리(false)
-#define SEND_TERM	10
+#define SEND_TERM	5
 
 
 constexpr char SC_POS = 0;
@@ -395,10 +395,6 @@ class Feed {
 	short y;
 	float size = 5.f;
 
-	int color_r = uiNUM(dre);
-	int color_g = uiNUM(dre);
-	int color_b = uiNUM(dre);
-
 public:
 	Feed() {
 		x = enemy_position_NUM(dre);
@@ -409,7 +405,10 @@ public:
 
 	void show() {
 		glBegin(GL_POLYGON);
-		glColor3ub(color_r, color_g, color_b);
+		float color_r = uiNUM(dre) / 255.f;
+		float color_g = uiNUM(dre) / 255.f;
+		float color_b = uiNUM(dre) / 255.f;
+		glColor3f(color_r, color_g, color_b);
 		for (int i = 0; i < 360; i++)
 		{
 			float angle = i * 3.141592 / 180;
@@ -489,8 +488,8 @@ void myDisplay(void)
 	//맵생성
 	DrawMap();
 	
-	//for (int i = 0; i < FEED_MAX_NUM; i++)
-	//	feed[i].show();
+	for (int i = 0; i < FEED_MAX_NUM; i++)
+		feed[i].show();
 
 	//플레이어 출력
 	player.show();
@@ -675,7 +674,7 @@ void BuildBoard(int argc, char** argv)
 	glutSpecialFunc(handleKeyboard);
 	glutSpecialUpFunc(handleKeyboardUp);
 	//초기 중앙 값 설정
-	glTranslatef(0, 0, 0.0f);
+	glTranslatef(w_width/6, w_height/4, 0.0f);
 
 	//Recv 반복
 	glutTimerFunc(1, DoTimer4RecvServer, 1);

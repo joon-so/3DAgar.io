@@ -10,7 +10,7 @@ using namespace std;
 
 #define SERVERPORT 9000
 #define MAX_BUFFER 1024
-#define MAP_SIZE	100.f	//¸Ê ÇÑÄ­´ç Å©±â
+#define MAP_SIZE	50.f	//¸Ê ÇÑÄ­´ç Å©±â
 #define FEED_MAX_NUM   500
 
 constexpr char SC_POS = 0;
