@@ -353,6 +353,10 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
             }
 
+            //for (int i = 0; i < FEED_MAX_NUM; i++) {
+            //    feed[i].CrushCheck()
+            //}
+
             //cout << client_sock << " x = " << x << " y = " << y << endl;
             break;
         }
@@ -385,7 +389,8 @@ int main()
     // socket()
     SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sock == INVALID_SOCKET) err_quit("socket()");
-
+    BOOL optval = TRUE;
+    setsockopt(listen_sock, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, sizeof(optval));
     // bind()
     SOCKADDR_IN serveraddr;
     ZeroMemory(&serveraddr, sizeof(serveraddr));
@@ -409,6 +414,7 @@ int main()
         // accept()
         memset(&clientaddr, 0, addrlen);
         client_sock = accept(listen_sock, (SOCKADDR*)&clientaddr, &addrlen);
+   
         if (client_sock == INVALID_SOCKET) {
             err_display("accept()");
             break;

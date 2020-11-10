@@ -711,6 +711,8 @@ int main(int argc, char** argv)
 	//家南 积己
 
 	serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	BOOL optval = TRUE;
+	setsockopt(serverSocket, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, sizeof(optval));
 	unsigned long noblock = 1;
 	//家南 Non-blocking 汲沥
 	int nRet = ioctlsocket(serverSocket, FIONBIO, &noblock);
