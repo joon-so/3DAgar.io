@@ -34,7 +34,7 @@ constexpr char SC_LOGIN = 2;
 constexpr char SC_USER_MOVE = 3;
 
 constexpr char SC_ALL_FEED = 4;
-
+constexpr char SC_FEED_USER = 5;
 
 enum KeyInput
 {
@@ -57,11 +57,6 @@ default_random_engine dre{ 2016182007 };
 //서버소켓
 SOCKET serverSocket;
 
-//패킷 타입
-constexpr int LOGIN = 1;
-constexpr int MOVE_Me = 2;
-constexpr int MOVE = 3;
-constexpr int LOGOUT = 4;
 
 void error_display(const char* msg, int err_no);
 void myDisplay(void);
@@ -89,6 +84,7 @@ typedef struct position_packet
 	char type;
 	short x;
 	short y;
+	int id;
 }position_packet;
 
 typedef struct sc_login_packet
@@ -98,6 +94,16 @@ typedef struct sc_login_packet
 	short x;
 	short y;
 }sc_login_packet;
+
+typedef struct sc_feedNuser_packet
+{
+	char type;
+	int user_id;
+	float user_size;
+	int feed_index;
+	short feed_x;
+	short feed_y;
+}sc_feedNuser_packet;
 
 
 int recvn(SOCKET s, char* buf, int len, int flags)
@@ -128,6 +134,7 @@ typedef struct Key {
 };
 
 class Player {
+	int id;
 	short x;
 	short y;
 	short prev_x, prev_y;
@@ -225,7 +232,10 @@ public:
 		}
 		glEnd();
 	}
-
+	//id 설정
+	void SetId(int new_id) {
+		id = new_id;
+	}
 	//x좌표 설정
 	void SetXpos(short xpos) {
 		x = xpos;
@@ -268,6 +278,10 @@ public:
 			move_direction.Arrow_Left = false;
 		if (i == KEY_RIGHT_UP)
 			move_direction.Arrow_Right = false;
+	}
+	//id좌표 리턴
+	short GetId() {
+		return id;
 	}
 	//x좌표 리턴
 	short GetXpos() {
@@ -420,11 +434,11 @@ public:
 		glEnd();
 	}
 	//x좌표 설정
-	short SetXpos(short xpos) {
+	void SetXpos(short xpos) {
 		x = xpos;
 	}
 	//y좌표 설정
-	short SetYpos(short ypos) {
+	void SetYpos(short ypos) {
 		y = ypos;
 	}
 };
@@ -600,6 +614,7 @@ void processdata(char* buf) {
 		position_packet* pp = reinterpret_cast<position_packet*>(buf);
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
+		player.SetId(pp->id);
 		cout << player.GetXpos() << " " << player.GetYpos() << endl;
 		break;
 	}
@@ -627,6 +642,22 @@ void processdata(char* buf) {
 		memcpy(feed, afp->feeds, sizeof(feed));
 
 		break;
+	}
+	case SC_FEED_USER:
+	{
+		sc_feedNuser_packet* afp = reinterpret_cast<sc_feedNuser_packet*>(buf);
+		if (afp->user_id == player.GetId())
+		{
+			player.SetSize(afp->user_size);
+		}
+		else {
+			for (User& u : users) {
+				if (afp->user_id == u.GetId())
+					u.SetSize(afp->user_size);
+			}
+		}
+		feed[afp->feed_index].SetXpos(afp->feed_x);
+		feed[afp->feed_index].SetYpos(afp->feed_y);
 	}
 	}
 	

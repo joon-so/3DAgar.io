@@ -20,7 +20,7 @@ constexpr char SC_LOGIN = 2;
 constexpr char SC_USER_MOVE = 3;
 
 constexpr char SC_ALL_FEED = 4;
-
+constexpr char SC_FEED_USER = 5;
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
@@ -39,6 +39,7 @@ typedef struct position_packet
     char type;
     short x;
     short y;
+    int id;
 }position_packet;
 
 typedef struct sc_login_packet
@@ -48,6 +49,39 @@ typedef struct sc_login_packet
     short x;
     short y;
 }sc_login_packet;
+
+typedef struct sc_feedNuser_packet
+{
+    char type;
+    int user_id;
+    float user_size;
+    int feed_index;
+    short feed_x;
+    short feed_y;
+}sc_feedNuser_packet;
+
+
+void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
+{
+    sc_feedNuser_packet fup;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    fup.type = SC_FEED_USER;
+    fup.user_id = uid;
+    fup.user_size = usize;
+    fup.feed_index = fi;
+    fup.feed_x = fx;
+    fup.feed_y = fy;
+
+    int size = sizeof(sc_feedNuser_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&fup, sizeof(sc_feedNuser_packet), 0);
+
+    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
+}
 
 
 class User {
@@ -70,60 +104,60 @@ public:
     }
 
 
-    ////다른 원과의 거리 측정
-    //float MeasureDistance(User user1) {
-    //    float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
-    //    return distance;
-    //}
-
-    ////다른 유저와 충돌처리
-    //void CrushCheck(User user1) {
-    //    // 충돌 체크 후 상대방이 더 클 경우
-    //    if (user1.GetSize() > size) {
-    //        if (MeasureDistance(user1) < user1.GetSize()) {
-    //            float newsize = user1.GetSize() + size * 0.3f;
-    //            user1.SetSize(newsize);
-    //            //내가 죽음
-    //        }
-    //    }
-
-    //    // 충돌체크 후 내가 더 큰경우
-    //    else if (user1.GetSize() < size) {
-    //        if (MeasureDistance(user1) < size) {
-    //            float newsize = size + user1.GetSize() * 0.3f;
-    //            size = newsize;
-    //            //상대가 죽음
-    //        }
-    //    }
-    //}
-
     //다른 원과의 거리 측정
-    float MeasureDistance(short xpos, short ypos) {
-        float distance = sqrt(pow(xpos - x, 2) + pow(ypos - y, 2));
+    float MeasureDistance(User user1) {
+        float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
         return distance;
     }
 
     //다른 유저와 충돌처리
-    void CrushCheck(short xpos, short ypos, float enemy_client_size) {
+    void CrushCheck(User user1) {
         // 충돌 체크 후 상대방이 더 클 경우
-        if (enemy_client_size > size) {
-            if (MeasureDistance(xpos, ypos) < enemy_client_size) {
-                float newsize = enemy_client_size + size * 0.3f;    //새로 증가될 사이즈
-                //상대방 사이즈 증가 패킷 전송
-                //나의 죽음 패킷전송
-                //user1.SetSize(newsize);
+        if (user1.GetSize() > size) {
+            if (MeasureDistance(user1) < user1.GetSize()) {
+                float newsize = user1.GetSize() + size * 0.3f;
+                user1.SetSize(newsize);
+                //내가 죽음
             }
         }
 
         // 충돌체크 후 내가 더 큰경우
-        else if (enemy_client_size < size) {
-            if (MeasureDistance(xpos, ypos) < size) {
-                float newsize = size + enemy_client_size * 0.3f;
+        else if (user1.GetSize() < size) {
+            if (MeasureDistance(user1) < size) {
+                float newsize = size + user1.GetSize() * 0.3f;
                 size = newsize;
-                //상대가 죽음 패킷 전송
+                //상대가 죽음
             }
         }
     }
+
+    ////다른 원과의 거리 측정
+    //float MeasureDistance(short xpos, short ypos) {
+    //    float distance = sqrt(pow(xpos - x, 2) + pow(ypos - y, 2));
+    //    return distance;
+    //}
+
+    ////다른 유저와 충돌처리
+    //void CrushCheck(short xpos, short ypos, float enemy_client_size) {
+    //    // 충돌 체크 후 상대방이 더 클 경우
+    //    if (enemy_client_size > size) {
+    //        if (MeasureDistance(xpos, ypos) < enemy_client_size) {
+    //            float newsize = enemy_client_size + size * 0.3f;    //새로 증가될 사이즈
+    //            //상대방 사이즈 증가 패킷 전송
+    //            //나의 죽음 패킷전송
+    //            //user1.SetSize(newsize);
+    //        }
+    //    }
+
+    //    // 충돌체크 후 내가 더 큰경우
+    //    else if (enemy_client_size < size) {
+    //        if (MeasureDistance(xpos, ypos) < size) {
+    //            float newsize = size + enemy_client_size * 0.3f;
+    //            size = newsize;
+    //            //상대가 죽음 패킷 전송
+    //        }
+    //    }
+    //}
 
     //x좌표 설정
     void SetXpos(short xpos) {
@@ -171,45 +205,42 @@ public:
         y = enemy_position_NUM(dre);
     }
 
-    ////다른 원과의 거리 측정
-    //float MeasureDistance(User user) {
-    //    float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
-    //    return distance;
-    //}
-
-    //void CrushCheck(User user) {
-    //    // 충돌 체크 후 작은쪽이 죽음 후 크기 커짐
-    //    if (size > user.GetSize()) {
-    //        if (MeasureDistance(user) < size) {
-    //            size += user.GetSize() / 2;
-    //        }
-    //    }
-
-    //    // 충돌체크 후 다시 먹힐경우 다시 위치 조정
-    //    else if (size < user.GetSize()) {
-    //        if (MeasureDistance(user) < user.GetSize()) {
-    //            user.SetSize(user.GetSize() + size / 2);
-    //            x = enemy_position_NUM(dre);
-    //            y = enemy_position_NUM(dre);
-    //            cout << user.GetSize() << endl;
-    //        }
-    //    }
-    //}
-
-        //다른 원과의 거리 측정
-    float MeasureDistance(short xpos, short ypos) {
-        float distance = sqrt(pow(xpos - x, 2) + pow(ypos - y, 2));
+    //다른 원과의 거리 측정
+    float MeasureDistance(User user) {
+        float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
         return distance;
     }
 
-    void CrushCheck(short xpos, short ypos, float client_size) {
+    void CrushCheck(User user, int i) {
+
         // 충돌체크 후 다시 먹힐경우 다시 위치 조정
-        if (MeasureDistance(xpos, ypos) < client_size) {
-            //client_size 증가 패킷 전송
+        if (MeasureDistance(user) < user.GetSize()) {
+            //스레드 동기화해야함
+            user.SetSize(user.GetSize() + size / 2);
             x = enemy_position_NUM(dre);
             y = enemy_position_NUM(dre);
+            for (User u : users) {
+                send_feedposi_usersize_data((SOCKET)u.GetId(), user.GetId(), user.GetSize(), i, x, y);
+            }
+            
         }
     }
+
+
+    //    //다른 원과의 거리 측정
+    //float MeasureDistance(short xpos, short ypos) {
+    //    float distance = sqrt(pow(xpos - x, 2) + pow(ypos - y, 2));
+    //    return distance;
+    //}
+
+    //void CrushCheck(short xpos, short ypos, float client_size) {
+    //    // 충돌체크 후 다시 먹힐경우 다시 위치 조정
+    //    if (MeasureDistance(xpos, ypos) < client_size) {
+    //        //client_size 증가 패킷 전송
+    //        x = enemy_position_NUM(dre);
+    //        y = enemy_position_NUM(dre);
+    //    }
+    //}
 
     //x좌표 설정
     short SetXpos(short xpos) {
@@ -293,6 +324,7 @@ void send_first_pos(SOCKET soc, User user)
     mp.type = SC_POS;
     mp.x = user.GetXpos();
     mp.y = user.GetYpos();
+    mp.id = user.GetId();
     
     int size = sizeof(position_packet);
 
@@ -360,6 +392,8 @@ void send_all_feed_data(SOCKET soc)
     //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
 }
 
+
+
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
@@ -383,22 +417,27 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         //수신된 패킷 처리
         switch (buf[0]){
         case CS_MOVE: {
+            User now_user;
             position_packet* mp = reinterpret_cast<position_packet*>(buf);
             int x = mp->x;
             int y = mp->y;
+            //현재 클라이언트의 좌표를 나머지 유저들에게 전송
             for (User &u : users)
             {
                 if ((int)client_sock == u.GetId()) {
                     u.SetXpos(mp->x);
                     u.SetYpos(mp->y);
+                    now_user = u;
                 }
                 if((int)client_sock != u.GetId())
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
             }
 
-            //for (int i = 0; i < FEED_MAX_NUM; i++) {
-            //    feed[i].CrushCheck()
-            //}
+            //먹이와 충돌처리
+            for (int i = 0; i < FEED_MAX_NUM; i++) {
+                feed[i].CrushCheck(now_user, i);
+            }
+            //현재 이새끼 아이디, 크기, 먹이배열의 인덱스, x, y
 
             //cout << client_sock << " x = " << x << " y = " << y << endl;
             break;
