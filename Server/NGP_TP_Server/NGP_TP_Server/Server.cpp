@@ -100,6 +100,7 @@ void send_Login_packet(SOCKET soc, User user)
     lp.id = user.GetId();
     lp.x = user.GetXpos();
     lp.y = user.GetYpos();
+    lp.size = user.GetSize();
 
     int size = sizeof(sc_login_packet);
 
@@ -176,9 +177,8 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                 if ((int)client_sock == u.GetId()) {
                     u.SetXpos(mp->x);
                     u.SetYpos(mp->y);
-                    cout << "before\t" << u.GetSize() << endl;
+                    u.SetSize(mp->size);
                     now_user.SetSize(u.GetSize());
-                    //cout << "after\t" << now_user.GetSize() << endl;
                     now_user = u;
                 }
                 if((int)client_sock != u.GetId())

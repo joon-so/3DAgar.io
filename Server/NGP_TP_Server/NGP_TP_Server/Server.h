@@ -38,9 +38,10 @@ typedef struct sc_user_move_packet
 typedef struct position_packet
 {
     char type;
+    int id;
     short x;
     short y;
-    int id;
+    float size;
 }position_packet;
 
 typedef struct sc_login_packet
@@ -49,6 +50,7 @@ typedef struct sc_login_packet
     int id;
     short x;
     short y;
+    float size;
 }sc_login_packet;
 
 typedef struct sc_feedNuser_packet

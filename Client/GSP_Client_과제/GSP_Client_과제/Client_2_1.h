@@ -82,9 +82,10 @@ typedef struct sc_user_move_packet
 typedef struct position_packet
 {
 	char type;
+	int id;
 	short x;
 	short y;
-	int id;
+	float size;
 }position_packet;
 
 typedef struct sc_login_packet
@@ -93,6 +94,7 @@ typedef struct sc_login_packet
 	int id;
 	short x;
 	short y;
+	float size;
 }sc_login_packet;
 
 typedef struct sc_feedNuser_packet
@@ -111,6 +113,8 @@ typedef struct Key {
 	bool Arrow_Left = false;
 	bool Arrow_Right = false;
 };
+
+
 
 class Player {
 	int id;
@@ -305,7 +309,7 @@ public:
 		//size = 20.f;
 		id = 0;
 	}
-	User(int id, short x, short y) :id{ id }, x{ x }, y{ y } {}
+	User(int id, short x, short y, float size) :id{ id }, x{ x }, y{ y }, size{size}{}
 
 	//화면에 사용자 출력
 	void show() {

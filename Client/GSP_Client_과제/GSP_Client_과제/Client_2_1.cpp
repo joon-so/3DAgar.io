@@ -1,5 +1,6 @@
 #include "Client_2_1.h"
 
+
 int recvn(SOCKET s, char* buf, int len, int flags)
 {
 	int received;
@@ -183,7 +184,7 @@ void processdata(char* buf) {
 	}
 	case SC_LOGIN: {
 		sc_login_packet* lp = reinterpret_cast<sc_login_packet*>(buf);
-		User u(lp->id, lp->x, lp->y);
+		User u(lp->id, lp->x, lp->y, lp->size);
 		users.push_back(u);
 		cout << "새로운 유저 추가" <<  lp->id <<" "<< lp->x << " " << lp->y <<endl;
 		break;
@@ -286,6 +287,7 @@ void DataToServer() {
 	mp.type = CS_MOVE;
 	mp.x = player.GetXpos();
 	mp.y = player.GetYpos();
+	mp.size = player.GetSize();
 	int size = sizeof(position_packet);
 
 	retval = send(serverSocket, (char*)&size, sizeof(int), 0);
