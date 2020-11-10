@@ -70,29 +70,57 @@ public:
     }
 
 
+    ////다른 원과의 거리 측정
+    //float MeasureDistance(User user1) {
+    //    float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
+    //    return distance;
+    //}
+
+    ////다른 유저와 충돌처리
+    //void CrushCheck(User user1) {
+    //    // 충돌 체크 후 상대방이 더 클 경우
+    //    if (user1.GetSize() > size) {
+    //        if (MeasureDistance(user1) < user1.GetSize()) {
+    //            float newsize = user1.GetSize() + size * 0.3f;
+    //            user1.SetSize(newsize);
+    //            //내가 죽음
+    //        }
+    //    }
+
+    //    // 충돌체크 후 내가 더 큰경우
+    //    else if (user1.GetSize() < size) {
+    //        if (MeasureDistance(user1) < size) {
+    //            float newsize = size + user1.GetSize() * 0.3f;
+    //            size = newsize;
+    //            //상대가 죽음
+    //        }
+    //    }
+    //}
+
     //다른 원과의 거리 측정
-    float MeasureDistance(User user1) {
-        float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
+    float MeasureDistance(short xpos, short ypos) {
+        float distance = sqrt(pow(xpos - x, 2) + pow(ypos - y, 2));
         return distance;
     }
 
     //다른 유저와 충돌처리
-    void CrushCheck(User user1) {
+    void CrushCheck(short xpos, short ypos, float enemy_client_size) {
         // 충돌 체크 후 상대방이 더 클 경우
-        if (user1.GetSize() > size) {
-            if (MeasureDistance(user1) < user1.GetSize()) {
-                float newsize = user1.GetSize() + size * 0.3f;
-                user1.SetSize(newsize);
-                //내가 죽음
+        if (enemy_client_size > size) {
+            if (MeasureDistance(xpos, ypos) < enemy_client_size) {
+                float newsize = enemy_client_size + size * 0.3f;    //새로 증가될 사이즈
+                //상대방 사이즈 증가 패킷 전송
+                //나의 죽음 패킷전송
+                //user1.SetSize(newsize);
             }
         }
 
         // 충돌체크 후 내가 더 큰경우
-        else if (user1.GetSize() < size) {
-            if (MeasureDistance(user1) < size) {
-                float newsize = size + user1.GetSize() * 0.3f;
+        else if (enemy_client_size < size) {
+            if (MeasureDistance(xpos, ypos) < size) {
+                float newsize = size + enemy_client_size * 0.3f;
                 size = newsize;
-                //상대가 죽음
+                //상대가 죽음 패킷 전송
             }
         }
     }
@@ -143,28 +171,43 @@ public:
         y = enemy_position_NUM(dre);
     }
 
-    //다른 원과의 거리 측정
-    float MeasureDistance(User user) {
-        float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
+    ////다른 원과의 거리 측정
+    //float MeasureDistance(User user) {
+    //    float distance = sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2));
+    //    return distance;
+    //}
+
+    //void CrushCheck(User user) {
+    //    // 충돌 체크 후 작은쪽이 죽음 후 크기 커짐
+    //    if (size > user.GetSize()) {
+    //        if (MeasureDistance(user) < size) {
+    //            size += user.GetSize() / 2;
+    //        }
+    //    }
+
+    //    // 충돌체크 후 다시 먹힐경우 다시 위치 조정
+    //    else if (size < user.GetSize()) {
+    //        if (MeasureDistance(user) < user.GetSize()) {
+    //            user.SetSize(user.GetSize() + size / 2);
+    //            x = enemy_position_NUM(dre);
+    //            y = enemy_position_NUM(dre);
+    //            cout << user.GetSize() << endl;
+    //        }
+    //    }
+    //}
+
+        //다른 원과의 거리 측정
+    float MeasureDistance(short xpos, short ypos) {
+        float distance = sqrt(pow(xpos - x, 2) + pow(ypos - y, 2));
         return distance;
     }
 
-    void CrushCheck(User user) {
-        // 충돌 체크 후 작은쪽이 죽음 후 크기 커짐
-        if (size > user.GetSize()) {
-            if (MeasureDistance(user) < size) {
-                size += user.GetSize() / 2;
-            }
-        }
-
+    void CrushCheck(short xpos, short ypos, float client_size) {
         // 충돌체크 후 다시 먹힐경우 다시 위치 조정
-        else if (size < user.GetSize()) {
-            if (MeasureDistance(user) < user.GetSize()) {
-                user.SetSize(user.GetSize() + size / 2);
-                x = enemy_position_NUM(dre);
-                y = enemy_position_NUM(dre);
-                cout << user.GetSize() << endl;
-            }
+        if (MeasureDistance(xpos, ypos) < client_size) {
+            //client_size 증가 패킷 전송
+            x = enemy_position_NUM(dre);
+            y = enemy_position_NUM(dre);
         }
     }
 
