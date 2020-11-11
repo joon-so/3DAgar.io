@@ -64,6 +64,15 @@ void myDisplay(void)
 	glColor3f(0.0, 0.0, 0.0);
 	glPointSize(1.0);
 
+	// 사이즈가 커질때마다 비율에 따라 스케일 조정
+	if ((int)player.GetPrevSize() != (int)player.GetSize()) {
+		float scale = (MAP_SIZE * 15 - (player.GetSize() - player.GetPrevSize())) / (MAP_SIZE * 15);
+		glScalef(scale, scale, 0);
+		//glTranslatef(-(1.f - scale) / 2, -(1.f - scale) / 2, 0.0f);
+		glTranslatef(player.GetXpos() * (1.f - scale) , player.GetYpos() * (1.f - scale), 0.0f);
+		player.SetPrevSize(player.GetSize());
+	}
+
 	//맵생성
 	DrawMap();
 	
@@ -72,6 +81,9 @@ void myDisplay(void)
 
 	//플레이어 출력
 	player.show();
+
+	//gluOrtho2D(player.GetXpos() - 400, p+layer.GetXpos() + 400, player.GetYpos() - 400, player.GetYpos() + 400);
+	//gluOrtho2D(-1, 1, -1, 1);
 
 	//카메라 움직임
 	moveCamera();
