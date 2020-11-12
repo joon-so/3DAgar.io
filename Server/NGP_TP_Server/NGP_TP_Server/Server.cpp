@@ -1,26 +1,5 @@
 #include "Server.h"
 
-void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
-{
-    sc_feedNuser_packet fup;
-    char buf[MAX_BUFFER];
-    int retval;
-
-    fup.type = SC_FEED_USER;
-    fup.user_id = uid;
-    fup.user_size = usize;
-    fup.feed_index = fi;
-    fup.feed_x = fx;
-    fup.feed_y = fy;
-
-    int size = sizeof(sc_feedNuser_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&fup, sizeof(sc_feedNuser_packet), 0);
-
-    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
-}
 
 // 소켓 함수 오류 출력 후 종료
 void err_quit(const char* msg)
@@ -144,6 +123,46 @@ void send_all_feed_data(SOCKET soc)
     retval = send(soc, (char*)&afp, sizeof(sc_all_feed_packet), 0);
 }
 
+void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
+{
+    sc_feedNuser_packet fup;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    fup.type = SC_FEED_USER;
+    fup.user_id = uid;
+    fup.user_size = usize;
+    fup.feed_index = fi;
+    fup.feed_x = fx;
+    fup.feed_y = fy;
+
+    int size = sizeof(sc_feedNuser_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&fup, sizeof(sc_feedNuser_packet), 0);
+
+    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
+}
+
+void send_user_logout_packet(SOCKET soc, int client)
+{
+    sc_logout_packet lop;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    lop.type = SC_LOGOUT;
+    lop.id = client;
+
+
+    int size = sizeof(sc_logout_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&lop, sizeof(sc_logout_packet), 0);
+
+    cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
+}
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
@@ -200,7 +219,23 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         }
     
     }
-
+    //클라이언트 로그 아웃 패킷 전송
+    for (User u : users) {
+        if (u.GetId() != (int)client_sock)
+            send_user_logout_packet((SOCKET)u.GetId(), client_sock);
+    }
+    auto iter = users.begin();
+    while (iter != users.end())
+    {
+        if (iter->GetId() == (int)client_sock)
+        {
+            iter = users.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
     cout << "쓰레드 종료" << endl;
     //스레드 종료!! 스레드 함수가 리턴
     return 0;

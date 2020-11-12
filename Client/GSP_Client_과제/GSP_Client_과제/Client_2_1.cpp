@@ -234,6 +234,25 @@ void processdata(char* buf) {
 		}
 		feed[afp->feed_index].SetXpos(afp->feed_x);
 		feed[afp->feed_index].SetYpos(afp->feed_y);
+
+		break;
+	}
+	case SC_LOGOUT: {
+		sc_logout_packet* lop = reinterpret_cast<sc_logout_packet*>(buf);
+		auto iter = users.begin();
+		while (iter != users.end())
+		{
+			if (iter->GetId() == lop->id)
+			{
+				iter = users.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
+		}
+		cout << "유저 로그아웃:" << lop->id << endl;
+		break;
 	}
 	}
 	

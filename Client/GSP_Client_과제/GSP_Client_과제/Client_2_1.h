@@ -36,6 +36,9 @@ constexpr char SC_USER_MOVE = 3;
 constexpr char SC_ALL_FEED = 4;
 constexpr char SC_FEED_USER = 5;
 
+constexpr char SC_LOGOUT = 6;
+
+
 enum KeyInput
 {
 	KEY_UP_DOWN,
@@ -106,6 +109,13 @@ typedef struct sc_feedNuser_packet
 	short feed_x;
 	short feed_y;
 }sc_feedNuser_packet;
+
+typedef struct sc_logout_packet
+{
+	char type;
+	int id;
+
+}sc_logout_packet;
 
 typedef struct Key {
 	bool Arrow_Up = false;

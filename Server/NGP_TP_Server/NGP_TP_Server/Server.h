@@ -23,6 +23,8 @@ constexpr char SC_USER_MOVE = 3;
 constexpr char SC_ALL_FEED = 4;
 constexpr char SC_FEED_USER = 5;
 
+constexpr char SC_LOGOUT = 6;
+
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
@@ -62,6 +64,13 @@ typedef struct sc_feedNuser_packet
     short feed_x;
     short feed_y;
 }sc_feedNuser_packet;
+
+typedef struct sc_logout_packet
+{
+    char type;
+    int id;
+
+}sc_logout_packet;
 
 class User {
     int id;
@@ -215,3 +224,4 @@ void send_first_pos(SOCKET soc, User user);
 void send_Login_packet(SOCKET soc, User user);
 void send_user_move_packet(SOCKET soc, int id, int x, int y);
 void send_all_feed_data(SOCKET soc);
+void send_user_logout_packet(SOCKET soc, int client);
