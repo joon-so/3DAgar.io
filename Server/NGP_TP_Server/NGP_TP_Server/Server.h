@@ -13,6 +13,7 @@ using namespace std;
 #define MAX_BUFFER      1024
 #define MAP_SIZE	    50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM    500
+#define ITEM_COUNT      50
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -209,7 +210,51 @@ public:
     }
 };
 
+class Trap {
+    int x;
+    int y;
+
+public:
+    //함정 재배치
+    Trap() {
+        x = enemy_position_NUM(dre);
+        y = enemy_position_NUM(dre);
+    }
+
+    //서버로부터 좌표와 타입을 받아옴
+    Trap(int x, int y) : x{ x }, y{ y } {}
+
+    //충돌처리
+    void CrushCheck(User user) {
+        if (sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2)) < user.GetSize()) {
+            x = enemy_position_NUM(dre);
+            y = enemy_position_NUM(dre);
+            user.SetSize(user.GetSize() * 0.3f);
+            if (user.GetSize() < 20.f)
+                user.SetSize(20.f);
+        }
+    }
+
+    //x좌표 설정
+    int SetXpos(int xpos) {
+        x = xpos;
+    }
+    //y좌표 설정
+    int SetYpos(int ypos) {
+        y = ypos;
+    }
+    //x좌표 리턴
+    int GetXpos() {
+        return x;
+    }
+    //y좌표 리턴
+    int GetYpos() {
+        return y;
+    }
+};
+
 Feed feed[FEED_MAX_NUM];
+Trap trap[ITEM_COUNT];
 
 typedef struct sc_all_feed_packet
 {
