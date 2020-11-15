@@ -225,13 +225,22 @@ public:
     Trap(int x, int y) : x{ x }, y{ y } {}
 
     //충돌처리
-    void CrushCheck(User user) {
+    void CrushCheck(User user, int i) {
         if (sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2)) < user.GetSize()) {
             x = enemy_position_NUM(dre);
             y = enemy_position_NUM(dre);
+
             user.SetSize(user.GetSize() * 0.3f);
             if (user.GetSize() < 20.f)
                 user.SetSize(20.f);
+
+            //패킷 보내기
+            for (User& u : users) {
+                if (user.GetId() == u.GetId()) {
+                    u.SetSize(user.GetSize());
+                }
+                //send_feedposi_usersize_data((SOCKET)u.GetId(), user.GetId(), user.GetSize(), i, x, y);
+            }
         }
     }
 

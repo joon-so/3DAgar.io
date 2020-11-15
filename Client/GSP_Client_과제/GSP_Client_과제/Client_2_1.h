@@ -22,7 +22,7 @@ using namespace std;
 #define MAP_SIZE		50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
-#define ITEM_TYPE		flase	//속도향상(false), 스턴(true)
+#define ITEM_TYPE		false	//속도향상(false), 스턴(true)
 #define USERLOGIN		false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE			false	//패배(true) 승리(false)
 #define SEND_TERM		5
@@ -123,8 +123,6 @@ typedef struct Key {
 	bool Arrow_Left = false;
 	bool Arrow_Right = false;
 };
-
-
 
 class Player {
 	int id;
@@ -436,10 +434,53 @@ public:
 	}
 };
 
-//User Vector
-vector<User> users;
-Player player;				//player 생성
+class Trap {
+	int x;
+	int y;
+
+public:
+	//함정 재배치
+	Trap() {
+		x = enemy_position_NUM(dre);
+		y = enemy_position_NUM(dre);
+	}
+
+	//서버로부터 좌표와 타입을 받아옴
+	Trap(int x, int y) : x{ x }, y{ y } {}
+
+	//화면에 출력
+	void show() {
+		glBegin(GL_POLYGON);
+		glColor3ub(0, 0, 0);
+		glVertex2i(x - 20, y - 20);
+		glVertex2i(x - 20, y + 20);
+		glVertex2i(x + 20, y + 20);
+		glVertex2i(x + 20, y - 20);
+		glEnd();
+	}
+
+	//x좌표 설정
+	int SetXpos(int xpos) {
+		x = xpos;
+	}
+	//y좌표 설정
+	int SetYpos(int ypos) {
+		y = ypos;
+	}
+	//x좌표 리턴
+	int GetXpos() {
+		return x;
+	}
+	//y좌표 리턴
+	int GetYpos() {
+		return y;
+	}
+};
+
+vector<User> users;				//User Vector
+Player player;					//player 생성
 Feed feed[FEED_MAX_NUM];		//먹이 생성
+Trap trap[ITEM_COUNT];			//함정 생성
 
 typedef struct sc_all_feed_packet
 {
