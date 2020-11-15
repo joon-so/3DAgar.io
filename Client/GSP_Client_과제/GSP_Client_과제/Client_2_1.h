@@ -37,7 +37,7 @@ constexpr char SC_ALL_FEED = 4;
 constexpr char SC_FEED_USER = 5;
 
 constexpr char SC_LOGOUT = 6;
-
+constexpr char SC_ALL_TRAP = 7;
 
 enum KeyInput
 {
@@ -487,3 +487,9 @@ typedef struct sc_all_feed_packet
 	char type;
 	Feed feeds[FEED_MAX_NUM];
 }sc_all_feed_packet;
+
+typedef struct sc_all_trap_packet
+{
+	char type;
+	Trap traps[ITEM_COUNT];
+}sc_all_trap_packet;

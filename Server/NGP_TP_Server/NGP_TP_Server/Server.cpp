@@ -123,6 +123,22 @@ void send_all_feed_data(SOCKET soc)
     retval = send(soc, (char*)&afp, sizeof(sc_all_feed_packet), 0);
 }
 
+void send_all_trap_data(SOCKET soc)
+{
+    sc_all_trap_packet atp;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    atp.type = SC_ALL_TRAP;
+    memcpy(atp.traps, trap, sizeof(trap));
+
+    int size = sizeof(sc_all_trap_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&atp, sizeof(sc_all_trap_packet), 0);
+}
+
 void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
 {
     sc_feedNuser_packet fup;
@@ -163,6 +179,7 @@ void send_user_logout_packet(SOCKET soc, int client)
 
     cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
 }
+
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
@@ -224,6 +241,8 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         if (u.GetId() != (int)client_sock)
             send_user_logout_packet((SOCKET)u.GetId(), client_sock);
     }
+
+    //클라이언트 벡터에서 로그아웃한 클라이언트 삭제
     auto iter = users.begin();
     while (iter != users.end())
     {
@@ -322,7 +341,8 @@ int main()
         //접속한 유저에게 초기데이터 (먹이, 아이템, 장애물) 자료구조 전송
         //먹이 배열 전송
         send_all_feed_data(client_sock);
-
+        //장애물 배열 전송
+        send_all_trap_data(client_sock);
 
         if (hThread == NULL) { closesocket(client_sock); }
         else {
