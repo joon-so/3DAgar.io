@@ -161,6 +161,28 @@ void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short
     //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
 }
 
+void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty)
+{
+    sc_trapNuser_packet tup;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    tup.type = SC_TRAP_USER;
+    tup.user_id = uid;
+    tup.user_size = usize;
+    tup.trap_index = ti;
+    tup.trap_x = tx;
+    tup.trap_y = ty;
+
+    int size = sizeof(sc_trapNuser_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&tup, sizeof(sc_trapNuser_packet), 0);
+
+    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
+}
+
 void send_user_logout_packet(SOCKET soc, int client)
 {
     sc_logout_packet lop;
@@ -224,6 +246,10 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             //먹이와 충돌처리
             for (int i = 0; i < FEED_MAX_NUM; i++) {
                 feed[i].CrushCheck(now_user, i);
+            }
+            //장애물과 충돌처리
+            for (int i = 0; i < ITEM_COUNT; i++) {
+                trap[i].CrushCheck(now_user, i);
             }
             //현재 이새끼 아이디, 크기, 먹이배열의 인덱스, x, y
 

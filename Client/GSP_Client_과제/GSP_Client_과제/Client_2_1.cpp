@@ -240,6 +240,31 @@ void processdata(char* buf) {
 
 		break;
 	}
+	case SC_ALL_TRAP: {
+		sc_all_trap_packet* atp = reinterpret_cast<sc_all_trap_packet*>(buf);
+
+		memcpy(trap, atp->traps, sizeof(trap));
+
+		break;
+	}
+	case SC_TRAP_USER:
+	{
+		sc_trapNuser_packet* tup = reinterpret_cast<sc_trapNuser_packet*>(buf);
+		if (tup->user_id == player.GetId())
+		{
+			player.SetSize(tup->user_size);
+		}
+		else {
+			for (User& u : users) {
+				if (tup->user_id == u.GetId())
+					u.SetSize(tup->user_size);
+			}
+		}
+		trap[tup->trap_index].SetXpos(tup->trap_x);
+		trap[tup->trap_index].SetYpos(tup->trap_y);
+		cout << trap[tup->trap_index].GetXpos() << " "<< trap[tup->trap_index].GetYpos() << endl;
+		break;
+	}
 	case SC_LOGOUT: {
 		sc_logout_packet* lop = reinterpret_cast<sc_logout_packet*>(buf);
 		auto iter = users.begin();

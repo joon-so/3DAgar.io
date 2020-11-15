@@ -27,6 +27,8 @@ constexpr char SC_FEED_USER = 5;
 constexpr char SC_LOGOUT = 6;
 constexpr char SC_ALL_TRAP = 7;
 
+constexpr char SC_TRAP_USER = 8;
+
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
@@ -66,6 +68,16 @@ typedef struct sc_feedNuser_packet
     short feed_x;
     short feed_y;
 }sc_feedNuser_packet;
+
+typedef struct sc_trapNuser_packet
+{
+    char type;
+    int user_id;
+    float user_size;
+    int trap_index;
+    short trap_x;
+    short trap_y;
+}sc_trapNuser_packet;
 
 typedef struct sc_logout_packet
 {
@@ -211,9 +223,12 @@ public:
     }
 };
 
+void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty);
+
+
 class Trap {
-    int x;
-    int y;
+    short x;
+    short y;
 
 public:
     //함정 재배치
@@ -223,7 +238,7 @@ public:
     }
 
     //서버로부터 좌표와 타입을 받아옴
-    Trap(int x, int y) : x{ x }, y{ y } {}
+    Trap(short x, short y) : x{ x }, y{ y } {}
 
     //충돌처리
     void CrushCheck(User user, int i) {
@@ -240,25 +255,26 @@ public:
                 if (user.GetId() == u.GetId()) {
                     u.SetSize(user.GetSize());
                 }
-                //send_feedposi_usersize_data((SOCKET)u.GetId(), user.GetId(), user.GetSize(), i, x, y);
+                send_trapposi_usersize_data((SOCKET)u.GetId(), user.GetId(), user.GetSize(), i, x, y);
             }
+            cout << x << " " << y << endl;
         }
     }
 
     //x좌표 설정
-    int SetXpos(int xpos) {
+    void SetXpos(short xpos) {
         x = xpos;
     }
     //y좌표 설정
-    int SetYpos(int ypos) {
+    void SetYpos(short ypos) {
         y = ypos;
     }
     //x좌표 리턴
-    int GetXpos() {
+    short GetXpos() {
         return x;
     }
     //y좌표 리턴
-    int GetYpos() {
+    short GetYpos() {
         return y;
     }
 };
