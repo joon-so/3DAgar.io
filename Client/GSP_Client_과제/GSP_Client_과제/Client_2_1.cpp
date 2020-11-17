@@ -382,3 +382,245 @@ int main(int argc, char** argv)
 	closesocket(serverSocket);
 	WSACleanup();
 }
+
+Player::Player() {
+	prev_x = 400, prev_y = 200;
+	//size = 20.f;
+	//prev_size = 20.f;
+}
+void Player::show() {
+	glBegin(GL_POLYGON);
+	glColor3f(1.0, 0.0, 0.0);
+
+	//플레이어 이동
+	if (move_direction.Arrow_Up) {
+		term++;
+		y += MOVE_SPEED;
+		//DataToServer();
+		if (term == SEND_TERM) {
+			DataToServer();
+			term = 0;
+		}
+	}
+	if (move_direction.Arrow_Down) {
+		term++;
+		y -= MOVE_SPEED;
+		if (term == SEND_TERM) {
+			DataToServer();
+			term = 0;
+		}
+
+	}
+	if (move_direction.Arrow_Left) {
+		term++;
+		x -= MOVE_SPEED;
+		if (term == SEND_TERM) {
+			DataToServer();
+			term = 0;
+		}
+	}
+	if (move_direction.Arrow_Right) {
+		term++;
+		x += MOVE_SPEED;
+		if (term == SEND_TERM) {
+			DataToServer();
+			term = 0;
+		}
+	}
+
+	//맵 충돌처리
+	if (50 * MAP_SIZE < x + size) {
+		size = size / 2.f;
+		if (size < 20.f)
+			size = 20.f;
+		x = 50 * MAP_SIZE - size;
+		move_direction.Arrow_Right = false;
+	}
+	if (50 * MAP_SIZE < y + size) {
+		size = size / 2.f;
+		if (size < 20.f)
+			size = 20.f;
+		y = 50 * MAP_SIZE - size;
+		move_direction.Arrow_Up = false;
+	}
+	else if (-50 * MAP_SIZE > x - size) {
+		size = size / 2.f;
+		if (size < 20.f)
+			size = 20.f;
+		x = -50 * MAP_SIZE + size;
+		move_direction.Arrow_Left = false;
+	}
+	if (-50 * MAP_SIZE > y - size) {
+		size = size / 2.f;
+		if (size < 20.f)
+			size = 20.f;
+		y = -50 * MAP_SIZE + size;
+		move_direction.Arrow_Down = false;
+	}
+
+	//플레이어 그리기
+	for (int i = 0; i < 360; i++)
+	{
+		float angle = i * 3.141592 / 180;
+		float ax = size * cos(angle);
+		float ay = size * sin(angle);
+		glVertex2f(x + ax, y + ay);
+	}
+	glEnd();
+}
+void Player::SetId(int new_id) {
+	id = new_id;
+}
+void Player::SetXpos(short xpos) {
+	x = xpos;
+}
+void Player::SetYpos(short ypos) {
+	y = ypos;
+}
+void Player::SetPrevXpos(short xpos) {
+	prev_x = xpos;
+}
+void Player::SetPrevYpos(short ypos) {
+	prev_y = ypos;
+}
+void Player::SetSize(float newsize) {
+	size = newsize;
+}
+void Player::SetPrevSize(float recentsize) {
+	prev_size = recentsize;
+}
+void Player::SetMoveDirection(int i) {
+	if (i == KEY_UP_DOWN)
+		move_direction.Arrow_Up = true;
+	if (i == KEY_DOWN_DOWN)
+		move_direction.Arrow_Down = true;
+	if (i == KEY_LEFT_DOWN)
+		move_direction.Arrow_Left = true;
+	if (i == KEY_RIGHT_DOWN)
+		move_direction.Arrow_Right = true;
+	if (i == KEY_UP_UP)
+		move_direction.Arrow_Up = false;
+	if (i == KEY_DOWN_UP)
+		move_direction.Arrow_Down = false;
+	if (i == KEY_LEFT_UP)
+		move_direction.Arrow_Left = false;
+	if (i == KEY_RIGHT_UP)
+		move_direction.Arrow_Right = false;
+}
+short Player::GetId() {
+	return id;
+}
+short Player::GetXpos() {
+	return x;
+}
+short Player::GetYpos() {
+	return y;
+}
+short Player::GetPrevXpos() {
+	return prev_x;
+}
+short Player::GetPrevYpos() {
+	return prev_y;
+}
+float Player::GetSize() {
+	return size;
+}
+float Player::GetPrevSize() {
+	return prev_size;
+}
+Key Player::GetKeybordInput() {
+	return move_direction;
+}
+
+User::User() {
+	x = enemy_position_NUM(dre);
+	y = enemy_position_NUM(dre);
+	//size = 20.f;
+	id = 0;
+}
+void User::show() {
+	glBegin(GL_POLYGON);
+	glColor3f(1.0, 0.0, 0.0);
+
+	for (int i = 0; i < 360; i++)
+	{
+		float angle = i * 3.141592 / 180;
+		float ax = size * cos(angle);
+		float ay = size * sin(angle);
+		glVertex2f(x + ax, y + ay);
+	}
+	glEnd();
+}
+void User::SetXpos(short xpos) {
+	x = xpos;
+}
+void User::SetYpos(short ypos) {
+	y = ypos;
+}
+void User::SetSize(float newsize) {
+	size = newsize;
+}
+short User::GetXpos() {
+	return x;
+}
+short User::GetYpos() {
+	return y;
+}
+float User::GetSize() {
+	return size;
+}
+int User::GetId() const {
+	return id;
+}
+
+Feed::Feed() {
+	x = enemy_position_NUM(dre);
+	y = enemy_position_NUM(dre);
+}
+void Feed::show() {
+	glBegin(GL_POLYGON);
+	float color_r = uiNUM(dre) / 255.f;
+	float color_g = uiNUM(dre) / 255.f;
+	float color_b = uiNUM(dre) / 255.f;
+	glColor3f(color_r, color_g, color_b);
+	for (int i = 0; i < 360; i++)
+	{
+		float angle = i * 3.141592 / 180;
+		float ax = size * cos(angle);
+		float ay = size * sin(angle);
+		glVertex2f(x + ax, y + ay);
+	}
+	glEnd();
+}
+void Feed::SetXpos(short xpos) {
+	x = xpos;
+}
+void Feed::SetYpos(short ypos) {
+	y = ypos;
+}
+
+Trap::Trap() {
+	x = enemy_position_NUM(dre);
+	y = enemy_position_NUM(dre);
+}
+void Trap::show() {
+	glBegin(GL_POLYGON);
+	glColor3ub(0, 0, 0);
+	glVertex2i(x - 20, y - 20);
+	glVertex2i(x - 20, y + 20);
+	glVertex2i(x + 20, y + 20);
+	glVertex2i(x + 20, y - 20);
+	glEnd();
+}
+void Trap::SetXpos(short xpos) {
+	x = xpos;
+}
+void Trap::SetYpos(short ypos) {
+	y = ypos;
+}
+short Trap::GetXpos() {
+	return x;
+}
+short Trap::GetYpos() {
+	return y;
+}

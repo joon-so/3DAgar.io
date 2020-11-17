@@ -147,173 +147,43 @@ class Player {
 	short term = 0;
 
 public:
-	Player() {
-		prev_x = 400, prev_y = 200;
-		//size = 20.f;
-		//prev_size = 20.f;
-	}
+	Player();
 	Player(short x, short y, float size) :x{ x }, y{ y }, size{ size } {}
 
 	//화면에 사용자 출력
-	void show() {
-		glBegin(GL_POLYGON);
-		glColor3f(1.0, 0.0, 0.0);
-
-		//플레이어 이동
-		if (move_direction.Arrow_Up) {
-			term++;
-			y += MOVE_SPEED;
-			//DataToServer();
-			if (term == SEND_TERM) {
-				DataToServer();
-				term = 0;
-			}
-		}
-		if (move_direction.Arrow_Down) {
-			term++;
-			y -= MOVE_SPEED;
-			if (term == SEND_TERM) {
-				DataToServer();
-				term = 0;
-			}
-
-		}
-		if (move_direction.Arrow_Left) {
-			term++;
-			x -= MOVE_SPEED;
-			if (term == SEND_TERM) {
-				DataToServer();
-				term = 0;
-			}
-		}
-		if (move_direction.Arrow_Right) {
-			term++;
-			x += MOVE_SPEED;
-			if (term == SEND_TERM) {
-				DataToServer();
-				term = 0;
-			}
-		}
-
-		//맵 충돌처리
-		if (50 * MAP_SIZE < x + size) {
-			size = size / 2.f;
-			if (size < 20.f)
-				size = 20.f;
-			x = 50 * MAP_SIZE - size;
-			move_direction.Arrow_Right = false;
-		}
-		if (50 * MAP_SIZE < y + size) {
-			size = size / 2.f;
-			if (size < 20.f)
-				size = 20.f;
-			y = 50 * MAP_SIZE - size;
-			move_direction.Arrow_Up = false;
-		}
-		else if (-50 * MAP_SIZE > x - size) {
-			size = size / 2.f;
-			if (size < 20.f)
-				size = 20.f;
-			x = -50 * MAP_SIZE + size;
-			move_direction.Arrow_Left = false;
-		}
-		if (-50 * MAP_SIZE > y - size) {
-			size = size / 2.f;
-			if (size < 20.f)
-				size = 20.f;
-			y = -50 * MAP_SIZE + size;
-			move_direction.Arrow_Down = false;
-		}
-
-		//플레이어 그리기
-		for (int i = 0; i < 360; i++)
-		{
-			float angle = i * 3.141592 / 180;
-			float ax = size * cos(angle);
-			float ay = size * sin(angle);
-			glVertex2f(x + ax, y + ay);
-		}
-		glEnd();
-	}
+	void show();
 	//id 설정
-	void SetId(int new_id) {
-		id = new_id;
-	}
+	void SetId(int new_id);
 	//x좌표 설정
-	void SetXpos(short xpos) {
-		x = xpos;
-	}
+	void SetXpos(short xpos);
 	//y좌표 설정
-	void SetYpos(short ypos) {
-		y = ypos;
-	}
+	void SetYpos(short ypos);
 	//prev_x좌표 설정
-	void SetPrevXpos(short xpos) {
-		prev_x = xpos;
-	}
+	void SetPrevXpos(short xpos);
 	//Prev_y좌표 설정
-	void SetPrevYpos(short ypos) {
-		prev_y = ypos;
-	}
+	void SetPrevYpos(short ypos);
 	//size 설정
-	void SetSize(float newsize) {
-		size = newsize;
-	}
+	void SetSize(float newsize);
 	//변경전 사이즈 설정
-	void SetPrevSize(float recentsize) {
-		prev_size = recentsize;
-	}
+	void SetPrevSize(float recentsize);
 	//캐릭터 방향 설정
-	void SetMoveDirection(int i) {
-		if (i == KEY_UP_DOWN)
-			move_direction.Arrow_Up = true;
-		if (i == KEY_DOWN_DOWN)
-			move_direction.Arrow_Down = true;
-		if (i == KEY_LEFT_DOWN)
-			move_direction.Arrow_Left = true;
-		if (i == KEY_RIGHT_DOWN)
-			move_direction.Arrow_Right = true;
-		if (i == KEY_UP_UP)
-			move_direction.Arrow_Up = false;
-		if (i == KEY_DOWN_UP)
-			move_direction.Arrow_Down = false;
-		if (i == KEY_LEFT_UP)
-			move_direction.Arrow_Left = false;
-		if (i == KEY_RIGHT_UP)
-			move_direction.Arrow_Right = false;
-	}
+	void SetMoveDirection(int i);
 	//id좌표 리턴
-	short GetId() {
-		return id;
-	}
+	short GetId();
 	//x좌표 리턴
-	short GetXpos() {
-		return x;
-	}
+	short GetXpos();
 	//y좌표 리턴
-	short GetYpos() {
-		return y;
-	}
+	short GetYpos();
 	//x좌표 리턴
-	short GetPrevXpos() {
-		return prev_x;
-	}
+	short GetPrevXpos();
 	//y좌표 리턴
-	short GetPrevYpos() {
-		return prev_y;
-	}
+	short GetPrevYpos();
 	//size 리턴
-	float GetSize() {
-		return size;
-	}
+	float GetSize();
 	//변경전 사이즈 리턴
-	float GetPrevSize() {
-		return prev_size;
-	}
+	float GetPrevSize();
 	//키보드 입력 상태 리턴
-	Key GetKeybordInput() {
-		return move_direction;
-	}
+	Key GetKeybordInput();
 };
 
 class User {
@@ -323,84 +193,25 @@ class User {
 	float size = 20.f;
 
 public:
-	User() {
-		x = enemy_position_NUM(dre);
-		y = enemy_position_NUM(dre);
-		//size = 20.f;
-		id = 0;
-	}
+	User();
 	User(int id, short x, short y, float size) :id{ id }, x{ x }, y{ y }, size{size}{}
 
 	//화면에 사용자 출력
-	void show() {
-		glBegin(GL_POLYGON);
-		glColor3f(1.0, 0.0, 0.0);
-
-		for (int i = 0; i < 360; i++)
-		{
-			float angle = i * 3.141592 / 180;
-			float ax = size * cos(angle);
-			float ay = size * sin(angle);
-			glVertex2f(x + ax, y + ay);
-		}
-		glEnd();
-	}
-
-	//다른 원과의 거리 측정
-	float MeasureDistance(User user1) {
-		float distance = sqrt(pow(user1.x - x, 2) + pow(user1.y - y, 2));
-		return distance;
-	}
-
-	//다른 유저와 충돌처리
-	void CrushCheck(User user1) {
-		// 충돌 체크 후 상대방이 더 클 경우
-		if (user1.GetSize() > size) {
-			if (MeasureDistance(user1) < user1.GetSize()) {
-				float newsize = user1.GetSize() + size * 0.3f;
-				user1.SetSize(newsize);
-				//내가 죽음
-			}
-		}
-
-		// 충돌체크 후 내가 더 큰경우
-		else if (user1.GetSize() < size) {
-			if (MeasureDistance(user1) < size) {
-				float newsize = size + user1.GetSize() * 0.3f;
-				size = newsize;
-				//상대가 죽음
-			}
-		}
-	}
-
+	void show();
 	//x좌표 설정
-	void SetXpos(short xpos) {
-		x = xpos;
-	}
+	void SetXpos(short xpos);
 	//y좌표 설정
-	void SetYpos(short ypos) {
-		y = ypos;
-	}
+	void SetYpos(short ypos);
 	//size 설정
-	void SetSize(float newsize) {
-		size = newsize;
-	}
+	void SetSize(float newsize);
 	//x좌표 리턴
-	short GetXpos() {
-		return x;
-	}
+	short GetXpos();
 	//y좌표 리턴
-	short GetYpos() {
-		return y;
-	}
+	short GetYpos();
 	//size 리턴
-	float GetSize() {
-		return size;
-	}
+	float GetSize();
 	//id 리턴
-	int GetId() const {
-		return id;
-	}
+	int GetId() const;
 
 	bool operator==(const User& rhs) const {
 		return GetId() == rhs.GetId();
@@ -413,37 +224,15 @@ class Feed {
 	float size = 5.f;
 
 public:
-	Feed() {
-		x = enemy_position_NUM(dre);
-		y = enemy_position_NUM(dre);
-	}
+	Feed();
 	//서버에서 상대방 받아올때 사용
 	Feed(short x, short y) : x{ x }, y{ y } {}
 
-	void show() {
-		glBegin(GL_POLYGON);
-		float color_r = uiNUM(dre) / 255.f;
-		float color_g = uiNUM(dre) / 255.f;
-		float color_b = uiNUM(dre) / 255.f;
-		glColor3f(color_r, color_g, color_b);
-		for (int i = 0; i < 360; i++)
-		{
-			float angle = i * 3.141592 / 180;
-			float ax = size * cos(angle);
-			float ay = size * sin(angle);
-			glVertex2f(x + ax, y + ay);
-		}
-
-		glEnd();
-	}
+	void show();
 	//x좌표 설정
-	void SetXpos(short xpos) {
-		x = xpos;
-	}
+	void SetXpos(short xpos);
 	//y좌표 설정
-	void SetYpos(short ypos) {
-		y = ypos;
-	}
+	void SetYpos(short ypos);
 };
 
 class Trap {
@@ -452,41 +241,21 @@ class Trap {
 
 public:
 	//함정 재배치
-	Trap() {
-		x = enemy_position_NUM(dre);
-		y = enemy_position_NUM(dre);
-	}
+	Trap();
 
 	//서버로부터 좌표와 타입을 받아옴
 	Trap(short x, short y) : x{ x }, y{ y } {}
 
 	//화면에 출력
-	void show() {
-		glBegin(GL_POLYGON);
-		glColor3ub(0, 0, 0);
-		glVertex2i(x - 20, y - 20);
-		glVertex2i(x - 20, y + 20);
-		glVertex2i(x + 20, y + 20);
-		glVertex2i(x + 20, y - 20);
-		glEnd();
-	}
-
+	void show();
 	//x좌표 설정
-	void SetXpos(short xpos) {
-		x = xpos;
-	}
+	void SetXpos(short xpos);
 	//y좌표 설정
-	void SetYpos(short ypos) {
-		y = ypos;
-	}
+	void SetYpos(short ypos);
 	//x좌표 리턴
-	short GetXpos() {
-		return x;
-	}
+	short GetXpos();
 	//y좌표 리턴
-	short GetYpos() {
-		return y;
-	}
+	short GetYpos();
 };
 
 vector<User> users;				//User Vector
