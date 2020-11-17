@@ -13,7 +13,7 @@ using namespace std;
 #define MAX_BUFFER      1024
 #define MAP_SIZE	    50.f	//¸Ê ÇÑÄ­´ç Å©±â
 #define FEED_MAX_NUM    500
-#define ITEM_COUNT      50
+#define ITEM_COUNT      20
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
