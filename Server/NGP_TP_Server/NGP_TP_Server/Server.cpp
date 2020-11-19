@@ -271,6 +271,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             //현재 클라이언트의 좌표를 나머지 유저들에게 전송
             for (User &u : users)
             {
+                //해당 클라이언트에게 전송 받았을 경우
                 if ((int)client_sock == u.GetId()) {
                     u.SetXpos(mp->x);
                     u.SetYpos(mp->y);
@@ -278,8 +279,11 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                     now_user.SetSize(u.GetSize());
                     now_user = u;
                 }
+                //다른 클라에게는 좌표 전송
                 if((int)client_sock != u.GetId())
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
+
+                u.CrushCheck(int(client_sock));
             }
 
             //먹이와 충돌처리

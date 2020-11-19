@@ -131,7 +131,7 @@ public:
             if (MeasureDistance(user1) < user1.GetSize()) {
                 float newsize = user1.GetSize() + size * 0.3f;
                 user1.SetSize(newsize);
-                //내가 죽음
+                //내가 죽고 상대는 커지고
             }
         }
 
@@ -140,7 +140,7 @@ public:
             if (MeasureDistance(user1) < size) {
                 float newsize = size + user1.GetSize() * 0.3f;
                 size = newsize;
-                //상대가 죽음
+                //상대가 죽고 나는 커지고
             }
         }
     }
