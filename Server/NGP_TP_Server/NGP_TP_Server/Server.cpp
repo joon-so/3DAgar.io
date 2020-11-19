@@ -90,7 +90,7 @@ void send_Login_packet(SOCKET soc, User user)
     cout << "send_Login_packet : 전송대상"<< soc <<" "<< lp.id <<" " << lp.x << " " << lp.y << " " << "(" << retval << " bytes)\n";
 }
 
-void send_user_move_packet(SOCKET soc, int id, int x, int y)
+void send_user_move_packet(SOCKET soc, int id, int x, int y, float usize)
 {
     sc_user_move_packet ump;
     char buf[MAX_BUFFER];
@@ -100,6 +100,7 @@ void send_user_move_packet(SOCKET soc, int id, int x, int y)
     ump.id = id;
     ump.x = x;
     ump.y = y;
+    ump.size = usize;
     int size = sizeof(sc_user_move_packet);
 
     retval = send(soc, (char*)&size, sizeof(int), 0);
@@ -241,6 +242,26 @@ void send_user_logout_packet(SOCKET soc, int client)
     cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
 }
 
+void send_user_size_packet(SOCKET soc, int uid, float usize)
+{
+    sc_user_size_packet usp;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    usp.type = SC_USER_SIZE;
+    usp.id = uid;
+    usp.size = usize;
+
+
+    int size = sizeof(sc_user_size_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&usp, sizeof(sc_user_size_packet), 0);
+
+    //cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
+}
+
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
@@ -268,6 +289,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             position_packet* mp = reinterpret_cast<position_packet*>(buf);
             int x = mp->x;
             int y = mp->y;
+            float size = mp->size;
             //현재 클라이언트의 좌표를 나머지 유저들에게 전송
             for (User &u : users)
             {
@@ -281,8 +303,9 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                 }
                 //다른 클라에게는 좌표 전송
                 if((int)client_sock != u.GetId())
-                    send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
+                    send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y,size);
             }
+
 
             //다른 유저와 충돌처리
             for (User& u : users) {
@@ -434,4 +457,44 @@ int main()
     // 윈속 종료
     WSACleanup();
     return 0;
+}
+
+void User::CrushCheck(User user1)
+{
+    // 충돌 체크 후 상대방이 더 클 경우
+    if (user1.GetSize() > size) {
+        if (MeasureDistance(user1) < user1.GetSize()) {
+            float newsize = user1.GetSize() + size * 0.3f;
+            user1.SetSize(newsize);
+            cout << "플레이어 충돌처리" << endl;
+            //내가 죽고 상대는 커지고
+            for (User u : users)
+            {
+                //상대가 커지는 것을 알림
+                send_user_size_packet((SOCKET)u.GetId(), user1.GetId(), user1.GetSize());
+                //내 로그아웃을 알림
+                send_user_logout_packet((SOCKET)u.GetId(), id);
+
+            }
+        }
+    }
+
+    // 충돌체크 후 내가 더 큰경우
+    else if (user1.GetSize() < size) {
+        if (MeasureDistance(user1) < size) {
+            float newsize = size + user1.GetSize() * 0.3f;
+            size = newsize;
+            cout << "플레이어 충돌처리" << endl;
+            //상대가 죽고 나는 커지고
+            for (User u : users)
+            {
+                //내가 커지는 것을 알림
+                send_user_size_packet((SOCKET)u.GetId(), id, size);
+                //상대 로그아웃을 알림
+                send_user_logout_packet((SOCKET)u.GetId(), user1.GetId());
+
+            }
+        }
+    }
+
 }

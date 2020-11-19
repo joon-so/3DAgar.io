@@ -45,7 +45,7 @@ constexpr char SC_TRAP_USER = 8;
 constexpr char SC_ALL_ITEM = 9;
 
 constexpr char SC_ITEM_USER = 10;
-
+constexpr char SC_USER_SIZE = 11;
 
 enum KeyInput
 {
@@ -88,6 +88,7 @@ typedef struct sc_user_move_packet
 	int id;
 	short x;
 	short y;
+	float size;
 }sc_user_move_packet;
 
 typedef struct position_packet
@@ -144,6 +145,14 @@ typedef struct sc_logout_packet
 	int id;
 
 }sc_logout_packet;
+
+typedef struct sc_user_size_packet
+{
+	char type;
+	int id;
+	float  size;
+
+}sc_user_size_packet;
 
 typedef struct Key {
 	bool Arrow_Up = false;

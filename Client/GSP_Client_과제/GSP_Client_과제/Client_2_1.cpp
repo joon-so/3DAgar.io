@@ -214,6 +214,7 @@ void processdata(char* buf) {
 			if (u.GetId() == ump->id) {
 				u.SetXpos(ump->x);
 				u.SetYpos(ump->y);
+				u.SetSize(ump->size);
 			}
 		}
 		break;
@@ -296,8 +297,30 @@ void processdata(char* buf) {
 		cout << "ITEM TYPE:" <<itp->item_type << endl;
 		break;
 	}
+	case SC_USER_SIZE:
+	{
+		sc_user_size_packet* usp = reinterpret_cast<sc_user_size_packet*>(buf);
+		if (player.GetId() == usp->id)
+		{
+			player.SetSize(usp->size);
+		}
+		else
+		{
+			for (User& u : users)
+				if (u.GetId() == usp->id)
+					u.SetSize(usp->size);
+		}
+
+		break;
+	}
 	case SC_LOGOUT: {
 		sc_logout_packet* lop = reinterpret_cast<sc_logout_packet*>(buf);
+		if (player.GetId() == lop->id)
+		{
+			cout << "플레이어 종료!" << endl;
+			closesocket(serverSocket);
+			WSACleanup();
+		}
 		auto iter = users.begin();
 		while (iter != users.end())
 		{

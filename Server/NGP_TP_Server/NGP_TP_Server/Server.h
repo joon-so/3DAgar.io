@@ -31,6 +31,7 @@ constexpr char SC_TRAP_USER = 8;
 constexpr char SC_ALL_ITEM = 9;
 
 constexpr char SC_ITEM_USER = 10;
+constexpr char SC_USER_SIZE = 11;
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
@@ -42,6 +43,7 @@ typedef struct sc_user_move_packet
     int id;
     short x;
     short y;
+    float size;
 }sc_user_move_packet;
 
 typedef struct position_packet
@@ -99,6 +101,14 @@ typedef struct sc_logout_packet
 
 }sc_logout_packet;
 
+typedef struct sc_user_size_packet
+{
+    char type;
+    int id;
+    float  size;
+
+}sc_user_size_packet;
+
 class User {
     int id;
     short x;
@@ -125,26 +135,7 @@ public:
     }
 
     //다른 유저와 충돌처리
-    void CrushCheck(User user1) {
-        // 충돌 체크 후 상대방이 더 클 경우
-        if (user1.GetSize() > size) {
-            if (MeasureDistance(user1) < user1.GetSize()) {
-                float newsize = user1.GetSize() + size * 0.3f;
-                user1.SetSize(newsize);
-                //내가 죽고 상대는 커지고
-            }
-        }
-
-        // 충돌체크 후 내가 더 큰경우
-        else if (user1.GetSize() < size) {
-            if (MeasureDistance(user1) < size) {
-                float newsize = size + user1.GetSize() * 0.3f;
-                size = newsize;
-                //상대가 죽고 나는 커지고
-            }
-        }
-    }
-
+    void CrushCheck(User user1);
 
     //x좌표 설정
     void SetXpos(short xpos) {
@@ -372,3 +363,4 @@ void send_all_feed_data(SOCKET soc);
 void send_all_trap_data(SOCKET soc);
 void send_all_item_data(SOCKET soc);
 void send_user_logout_packet(SOCKET soc, int client);
+void send_user_size_packet(SOCKET soc, float size);
