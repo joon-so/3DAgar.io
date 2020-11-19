@@ -40,6 +40,8 @@ constexpr char SC_LOGOUT = 6;
 constexpr char SC_ALL_TRAP = 7;
 
 constexpr char SC_TRAP_USER = 8;
+constexpr char SC_ALL_ITEM = 9;
+
 
 enum KeyInput
 {
@@ -317,3 +319,9 @@ typedef struct sc_all_trap_packet
 	char type;
 	Trap traps[ITEM_COUNT];
 }sc_all_trap_packet;
+
+typedef struct sc_all_item_packet
+{
+	char type;
+	Item items[ITEM_COUNT];
+}sc_all_item_packet;

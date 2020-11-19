@@ -248,6 +248,7 @@ void processdata(char* buf) {
 
 		memcpy(trap, atp->traps, sizeof(trap));
 
+		cout << "전체 트랩 데이터 수신 완료" << endl;
 		break;
 	}
 	case SC_TRAP_USER:
@@ -266,6 +267,13 @@ void processdata(char* buf) {
 		trap[tup->trap_index].SetXpos(tup->trap_x);
 		trap[tup->trap_index].SetYpos(tup->trap_y);
 		cout << trap[tup->trap_index].GetXpos() << " "<< trap[tup->trap_index].GetYpos() << endl;
+		break;
+	}
+	case SC_ALL_ITEM: {
+		sc_all_item_packet* aip = reinterpret_cast<sc_all_item_packet*>(buf);
+
+		memcpy(item, aip->items, sizeof(item));
+		cout << "전체 아이템 데이터 수신 완료" << endl;
 		break;
 	}
 	case SC_LOGOUT: {

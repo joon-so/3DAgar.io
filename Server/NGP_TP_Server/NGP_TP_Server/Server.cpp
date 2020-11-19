@@ -147,7 +147,7 @@ void send_all_item_data(SOCKET soc)
     char buf[MAX_BUFFER];
     int retval;
 
-    aip.type = SC_ALL_TRAP;
+    aip.type = SC_ALL_ITEM;
     memcpy(aip.items, item, sizeof(item));
 
     int size = sizeof(sc_all_item_packet);
