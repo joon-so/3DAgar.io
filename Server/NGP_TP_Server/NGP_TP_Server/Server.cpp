@@ -282,8 +282,12 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                 //다른 클라에게는 좌표 전송
                 if((int)client_sock != u.GetId())
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y);
+            }
 
-                u.CrushCheck(int(client_sock));
+            //다른 유저와 충돌처리
+            for (User& u : users) {
+                if ((int)client_sock != now_user.GetId())
+                    now_user.CrushCheck(u);
             }
 
             //먹이와 충돌처리
