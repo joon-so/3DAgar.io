@@ -82,6 +82,9 @@ void myDisplay(void)
 	for (int i = 0; i < ITEM_COUNT; i++)
 		trap[i].show();
 
+	for (int i = 0; i < ITEM_COUNT; i++)
+		item[i].show();
+
 	//플레이어 출력
 	player.show();
 

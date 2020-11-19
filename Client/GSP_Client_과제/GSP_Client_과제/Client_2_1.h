@@ -235,6 +235,48 @@ public:
 	void SetYpos(short ypos);
 };
 
+class Item {
+	int x;
+	int y;
+	bool type;	//아이템 종류 구별
+
+public:
+	Item() {
+		x = enemy_position_NUM(dre);
+		y = enemy_position_NUM(dre);
+	}
+	//서버로부터 좌표와 타입을 받아옴
+	Item(int x, int y, bool type) : x{ x }, y{ y }, type{ type } {}
+
+	//화면에 출력
+	void show() {
+		glBegin(GL_TRIANGLES);
+		glColor3f(1.0, 1.0, 0.0);
+		glVertex2i(x - 20, y - 10);
+		glVertex2i(x + 20, y - 10);
+		glVertex2i(x, y + 23);
+		glEnd();
+	}
+
+	//x좌표 설정
+	int SetXpos(int xpos) {
+		x = xpos;
+	}
+	//y좌표 설정
+	int SetYpos(int ypos) {
+		y = ypos;
+	}
+	//x좌표 리턴
+	int GetXpos() {
+		return x;
+	}
+	//y좌표 리턴
+	int GetYpos() {
+		return y;
+	}
+};
+
+
 class Trap {
 	short x;
 	short y;
@@ -261,6 +303,7 @@ public:
 vector<User> users;				//User Vector
 Player player;					//player 생성
 Feed feed[FEED_MAX_NUM];		//먹이 생성
+Item item[ITEM_COUNT];			//아이템 생성
 Trap trap[ITEM_COUNT];			//함정 생성
 
 typedef struct sc_all_feed_packet
