@@ -28,6 +28,7 @@ constexpr char SC_LOGOUT = 6;
 constexpr char SC_ALL_TRAP = 7;
 
 constexpr char SC_TRAP_USER = 8;
+constexpr char SC_ALL_ITEM = 9;
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
@@ -335,6 +336,12 @@ typedef struct sc_all_trap_packet
     Trap traps[ITEM_COUNT];
 }sc_all_trap_packet;
 
+typedef struct sc_all_item_packet
+{
+    char type;
+    Item items[ITEM_COUNT];
+}sc_all_item_packet;
+
 void err_quit(const char* msg);
 void err_display(const char* msg);
 int recvn(SOCKET s, char* buf, int len, int flags);
@@ -343,4 +350,5 @@ void send_Login_packet(SOCKET soc, User user);
 void send_user_move_packet(SOCKET soc, int id, int x, int y);
 void send_all_feed_data(SOCKET soc);
 void send_all_trap_data(SOCKET soc);
+void send_all_item_data(SOCKET soc);
 void send_user_logout_packet(SOCKET soc, int client);

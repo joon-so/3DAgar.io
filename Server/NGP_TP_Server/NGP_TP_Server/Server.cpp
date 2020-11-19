@@ -141,6 +141,24 @@ void send_all_trap_data(SOCKET soc)
     cout <<"전체 트랩 크기" <<sizeof(atp.traps) << endl;
 }
 
+void send_all_item_data(SOCKET soc)
+{
+    sc_all_item_packet aip;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    aip.type = SC_ALL_TRAP;
+    memcpy(aip.items, item, sizeof(item));
+
+    int size = sizeof(sc_all_item_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&aip, sizeof(sc_all_item_packet), 0);
+
+    cout << "전체 아이템 크기" << sizeof(aip.items) << endl;
+}
+
 void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
 {
     sc_feedNuser_packet fup;
@@ -371,6 +389,8 @@ int main()
         send_all_feed_data(client_sock);
         //장애물 배열 전송
         send_all_trap_data(client_sock);
+        //아이템 배열 전송
+        send_all_item_data(client_sock);
 
         if (hThread == NULL) { closesocket(client_sock); }
         else {
