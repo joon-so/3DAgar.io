@@ -86,7 +86,7 @@ typedef struct sc_item_type_packet
 {
     char type;
     int user_id;
-    bool item_type;
+    short item_type;
     int item_index;
     short item_x;
     short item_y;
@@ -243,12 +243,13 @@ void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy);
 class Item {
     int x;
     int y;
-    bool type;	//아이템 종류 구별
+    short type; //아이템 종류 구별
 
 public:
     Item() {
         x = enemy_position_NUM(dre);
         y = enemy_position_NUM(dre);
+        type = rand() % 2;
     }
 
     //서버로부터 좌표와 타입을 받아옴
@@ -259,7 +260,6 @@ public:
         if (sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2)) < user.GetSize()) {
             x = enemy_position_NUM(dre);
             y = enemy_position_NUM(dre);
-            type = true;
             for (User& u : users) {
                 send_item_type((SOCKET)u.GetId(), user.GetId(), type, i, x, y);
             }

@@ -284,7 +284,9 @@ void processdata(char* buf) {
 		if (itp->user_id == player.GetId())
 		{
 			//아이템충돌처리
-			//itp->type
+			player.SetItem(itp->item_type);
+			if (player.GetItem() == 0)
+				player.SetItem(-1);
 		}
 
 		item[itp->item_index].SetXpos(itp->item_x);
@@ -422,39 +424,66 @@ void Player::show() {
 	glColor3f(1.0, 0.0, 0.0);
 
 	//플레이어 이동
-	if (move_direction.Arrow_Up) {
-		term++;
-		y += MOVE_SPEED;
-		//DataToServer();
-		if (term == SEND_TERM) {
-			DataToServer();
-			term = 0;
-		}
-	}
-	if (move_direction.Arrow_Down) {
-		term++;
-		y -= MOVE_SPEED;
-		if (term == SEND_TERM) {
-			DataToServer();
-			term = 0;
+	if (item_type != -1) {
+		int move_speed = MOVE_SPEED;
+		if (item_type == 1) {
+			move_speed = MOVE_SPEED * ITEM_SPEEDUP;
+			item_term--;
+			if (item_term < 0) {
+				item_term = SPEEDUP_TIME;
+				item_type = 0;
+			}
 		}
 
-	}
-	if (move_direction.Arrow_Left) {
-		term++;
-		x -= MOVE_SPEED;
-		if (term == SEND_TERM) {
-			DataToServer();
-			term = 0;
+		if (move_direction.Arrow_Up) {
+			term++;
+			y += move_speed;
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
+		}
+		if (move_direction.Arrow_Down) {
+			term++;
+			y -= move_speed;
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
+
+		}
+		if (move_direction.Arrow_Left) {
+			term++;
+			x -= move_speed;
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
+		}
+		if (move_direction.Arrow_Right) {
+			term++;
+			x += move_speed;
+			if (term == SEND_TERM) {
+				DataToServer();
+				term = 0;
+			}
 		}
 	}
-	if (move_direction.Arrow_Right) {
-		term++;
-		x += MOVE_SPEED;
-		if (term == SEND_TERM) {
+	else {
+		item_term--;
+		if (item_term % 2 == 0) {
+			x += MOVE_SPEED;
 			DataToServer();
-			term = 0;
 		}
+		else {
+			x -= MOVE_SPEED;
+			DataToServer();
+		}
+		if (item_term < 0) {
+			item_term = SPEEDUP_TIME;
+			item_type = 0;
+		}
+		cout << "멈춰" << endl;
 	}
 
 	//맵 충돌처리
@@ -536,6 +565,10 @@ void Player::SetMoveDirection(int i) {
 	if (i == KEY_RIGHT_UP)
 		move_direction.Arrow_Right = false;
 }
+void Player::SetItem(short i)
+{
+	item_type = i;
+}
 short Player::GetId() {
 	return id;
 }
@@ -556,6 +589,10 @@ float Player::GetSize() {
 }
 float Player::GetPrevSize() {
 	return prev_size;
+}
+short Player::GetItem()
+{
+	return item_type;
 }
 Key Player::GetKeybordInput() {
 	return move_direction;

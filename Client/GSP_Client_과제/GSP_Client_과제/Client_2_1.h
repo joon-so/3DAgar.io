@@ -22,6 +22,8 @@ using namespace std;
 #define MAP_SIZE		50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
+#define ITEM_SPEEDUP	2		//속도 증가 아이템 계수
+#define SPEEDUP_TIME	100		//속도 증가 시간
 #define ITEM_TYPE		false	//속도향상(false), 스턴(true)
 #define USERLOGIN		false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE			false	//패배(true) 승리(false)
@@ -130,7 +132,7 @@ typedef struct sc_item_type_packet
 {
 	char type;
 	int user_id;
-	bool item_type;
+	short item_type;
 	int item_index;
 	short item_x;
 	short item_y;
@@ -159,6 +161,8 @@ class Player {
 	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
 	Key move_direction;
 	short term = 0;
+	short item_term = SPEEDUP_TIME;
+	short item_type = 0;
 
 public:
 	Player();
@@ -182,6 +186,8 @@ public:
 	void SetPrevSize(float recentsize);
 	//캐릭터 방향 설정
 	void SetMoveDirection(int i);
+	//캐릭터 아이템 효과 설정
+	void SetItem(short i);
 	//id좌표 리턴
 	short GetId();
 	//x좌표 리턴
@@ -196,6 +202,8 @@ public:
 	float GetSize();
 	//변경전 사이즈 리턴
 	float GetPrevSize();
+	//캐릭터 아이템 효과 리턴
+	short GetItem();
 	//키보드 입력 상태 리턴
 	Key GetKeybordInput();
 };
