@@ -137,6 +137,8 @@ void send_all_trap_data(SOCKET soc)
     retval = send(soc, (char*)&size, sizeof(int), 0);
 
     retval = send(soc, (char*)&atp, sizeof(sc_all_trap_packet), 0);
+
+    cout <<"전체 트랩 크기" <<sizeof(atp.traps) << endl;
 }
 
 void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
