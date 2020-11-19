@@ -269,11 +269,29 @@ void processdata(char* buf) {
 		cout << trap[tup->trap_index].GetXpos() << " "<< trap[tup->trap_index].GetYpos() << endl;
 		break;
 	}
-	case SC_ALL_ITEM: {
+	case SC_ALL_ITEM: 
+	{
 		sc_all_item_packet* aip = reinterpret_cast<sc_all_item_packet*>(buf);
 
 		memcpy(item, aip->items, sizeof(item));
 		cout << "전체 아이템 데이터 수신 완료" << endl;
+		break;
+	}
+	case SC_ITEM_USER:
+	{
+		sc_item_type_packet* itp = reinterpret_cast<sc_item_type_packet*>(buf);
+
+		if (itp->user_id == player.GetId())
+		{
+			//아이템충돌처리
+			//itp->type
+		}
+
+		item[itp->item_index].SetXpos(itp->item_x);
+		item[itp->item_index].SetYpos(itp->item_y);
+		
+
+		cout << "ITEM TYPE:" <<itp->item_type << endl;
 		break;
 	}
 	case SC_LOGOUT: {

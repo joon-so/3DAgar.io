@@ -30,6 +30,8 @@ constexpr char SC_ALL_TRAP = 7;
 constexpr char SC_TRAP_USER = 8;
 constexpr char SC_ALL_ITEM = 9;
 
+constexpr char SC_ITEM_USER = 10;
+
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
@@ -79,6 +81,16 @@ typedef struct sc_trapNuser_packet
     short trap_x;
     short trap_y;
 }sc_trapNuser_packet;
+
+typedef struct sc_item_type_packet
+{
+    char type;
+    int user_id;
+    bool item_type;
+    int item_index;
+    short item_x;
+    short item_y;
+}sc_item_type_packet;
 
 typedef struct sc_logout_packet
 {
@@ -224,7 +236,9 @@ public:
     }
 };
 
-void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty);
+
+
+void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy);
 
 class Item {
     int x;
@@ -241,12 +255,16 @@ public:
     Item(int x, int y, bool type) : x{ x }, y{ y }, type{ type } {}
 
     //충동체크
-    void CrushCheck(User user) {
-    	if (sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2)) < user.GetSize()) {
-    		x = enemy_position_NUM(dre);
-    		y = enemy_position_NUM(dre);
-    		//효과 구현
-    	}
+    void CrushCheck(User user, int i) {
+        if (sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2)) < user.GetSize()) {
+            x = enemy_position_NUM(dre);
+            y = enemy_position_NUM(dre);
+            type = true;
+            for (User& u : users) {
+                send_item_type((SOCKET)u.GetId(), user.GetId(), type, i, x, y);
+            }
+            cout << x << " " << y << endl;
+        }
     }
 
     //x좌표 설정
@@ -266,6 +284,8 @@ public:
         return y;
     }
 };
+
+void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty);
 
 class Trap {
     short x;

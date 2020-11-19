@@ -42,6 +42,8 @@ constexpr char SC_ALL_TRAP = 7;
 constexpr char SC_TRAP_USER = 8;
 constexpr char SC_ALL_ITEM = 9;
 
+constexpr char SC_ITEM_USER = 10;
+
 
 enum KeyInput
 {
@@ -123,6 +125,16 @@ typedef struct sc_trapNuser_packet
 	short trap_x;
 	short trap_y;
 }sc_trapNuser_packet;
+
+typedef struct sc_item_type_packet
+{
+	char type;
+	int user_id;
+	bool item_type;
+	int item_index;
+	short item_x;
+	short item_y;
+}sc_item_type_packet;
 
 typedef struct sc_logout_packet
 {
@@ -261,11 +273,11 @@ public:
 	}
 
 	//x¡¬«• º≥¡§
-	int SetXpos(int xpos) {
+	void SetXpos(int xpos) {
 		x = xpos;
 	}
 	//y¡¬«• º≥¡§
-	int SetYpos(int ypos) {
+	void SetYpos(int ypos) {
 		y = ypos;
 	}
 	//x¡¬«• ∏Æ≈œ

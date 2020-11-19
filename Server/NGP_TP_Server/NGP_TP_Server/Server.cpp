@@ -177,9 +177,8 @@ void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short
     retval = send(soc, (char*)&size, sizeof(int), 0);
 
     retval = send(soc, (char*)&fup, sizeof(sc_feedNuser_packet), 0);
-
-    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
 }
+
 
 void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty)
 {
@@ -200,7 +199,27 @@ void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short
 
     retval = send(soc, (char*)&tup, sizeof(sc_trapNuser_packet), 0);
 
-    //cout << "send_first_pos : " << ump.x << " " << ump.y << " " << "(" << retval << " bytes)\n";
+}
+
+void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy)
+{
+    sc_item_type_packet itp;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    itp.type = SC_ITEM_USER;
+    itp.user_id = uid;
+    itp.item_type = type;
+    itp.item_index = ii;
+    itp.item_x = ix;
+    itp.item_y = iy;
+
+    int size = sizeof(sc_item_type_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&itp, sizeof(sc_item_type_packet), 0);
+
 }
 
 void send_user_logout_packet(SOCKET soc, int client)
@@ -270,6 +289,10 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             //장애물과 충돌처리
             for (int i = 0; i < ITEM_COUNT; i++) {
                 trap[i].CrushCheck(now_user, i);
+            }
+            //아이템과 충돌처리
+            for (int i = 0; i < ITEM_COUNT; i++) {
+                item[i].CrushCheck(now_user, i);
             }
             //현재 이새끼 아이디, 크기, 먹이배열의 인덱스, x, y
 
