@@ -225,6 +225,46 @@ public:
 
 void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty);
 
+class Item {
+    int x;
+    int y;
+    bool type;	//아이템 종류 구별
+
+public:
+    Item() {
+        x = enemy_position_NUM(dre);
+        y = enemy_position_NUM(dre);
+    }
+
+    //서버로부터 좌표와 타입을 받아옴
+    Item(int x, int y, bool type) : x{ x }, y{ y }, type{ type } {}
+
+    //충동체크
+    void CrushCheck(User user) {
+    	if (sqrt(pow(user.GetXpos() - x, 2) + pow(user.GetYpos() - y, 2)) < user.GetSize()) {
+    		x = enemy_position_NUM(dre);
+    		y = enemy_position_NUM(dre);
+    		//효과 구현
+    	}
+    }
+
+    //x좌표 설정
+    int SetXpos(int xpos) {
+        x = xpos;
+    }
+    //y좌표 설정
+    int SetYpos(int ypos) {
+        y = ypos;
+    }
+    //x좌표 리턴
+    int GetXpos() {
+        return x;
+    }
+    //y좌표 리턴
+    int GetYpos() {
+        return y;
+    }
+};
 
 class Trap {
     short x;
@@ -280,6 +320,7 @@ public:
 };
 
 Feed feed[FEED_MAX_NUM];
+Item item[ITEM_COUNT];
 Trap trap[ITEM_COUNT];
 
 typedef struct sc_all_feed_packet
