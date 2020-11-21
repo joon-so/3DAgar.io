@@ -55,11 +55,15 @@ void DrawMap()
 		DrawLine(i * MAP_SIZE, 50 * MAP_SIZE, i * MAP_SIZE, -50 * MAP_SIZE);
 		DrawLine(50 * MAP_SIZE, i * MAP_SIZE, -50 * MAP_SIZE, i * MAP_SIZE);
 	}
-
 }
 
 void myDisplay(void)
 {
+	/* Delta time in seconds. */
+	currentTime = glutGet(GLUT_ELAPSED_TIME);
+	deltaTime = (currentTime - lastCheckTime) / 1000.0;
+	lastCheckTime = currentTime;
+
 	glClear(GL_COLOR_BUFFER_BIT);
 	glColor3f(0.0, 0.0, 0.0);
 	glPointSize(1.0);
@@ -448,10 +452,10 @@ void Player::show() {
 
 	//ÇÃ·¹ÀÌ¾î ÀÌµ¿
 	if (item_type != -1) {
-		int move_speed = MOVE_SPEED;
+		int move_speed = MOVE_SPEED * deltaTime;
 		if (item_type == 1) {
-			move_speed = MOVE_SPEED * ITEM_SPEEDUP;
-			item_term--;
+			move_speed = MOVE_SPEED * ITEM_SPEEDUP * deltaTime;
+			item_term -= deltaTime;
 			if (item_term < 0) {
 				item_term = SPEEDUP_TIME;
 				item_type = 0;
@@ -493,20 +497,21 @@ void Player::show() {
 		}
 	}
 	else {
-		item_term--;
-		if (item_term % 2 == 0) {
-			x += MOVE_SPEED;
+		item_term -= deltaTime * 100;
+		if (shake == false) {
+			x += MOVE_SPEED * deltaTime;
 			DataToServer();
+			shake = true;
 		}
 		else {
-			x -= MOVE_SPEED;
+			x -= MOVE_SPEED * deltaTime;
 			DataToServer();
+			shake = false;
 		}
 		if (item_term < 0) {
 			item_term = SPEEDUP_TIME;
 			item_type = 0;
 		}
-		cout << "¸ØÃç" << endl;
 	}
 
 	//¸Ê Ãæµ¹Ã³¸®

@@ -18,16 +18,20 @@ using namespace std;
 
 #define w_width			1200	//윈도우창 가로 크기
 #define w_height		800		//윈도우창 세로 크기
-#define MOVE_SPEED		2		//카메라 움직이는 기본 속도
+#define MOVE_SPEED		200		//카메라 움직이는 기본 속도
 #define MAP_SIZE		50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
 #define ITEM_SPEEDUP	2		//속도 증가 아이템 계수
-#define SPEEDUP_TIME	100		//속도 증가 시간
+#define SPEEDUP_TIME	2	//속도 증가 시간
 #define ITEM_TYPE		false	//속도향상(false), 스턴(true)
 #define USERLOGIN		false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE			false	//패배(true) 승리(false)
 #define SEND_TERM		5
+
+float deltaTime = 0.f;
+float lastCheckTime = 0.f;
+float currentTime = 0.f;
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -172,6 +176,7 @@ class Player {
 	short term = 0;
 	short item_term = SPEEDUP_TIME;
 	short item_type = 0;
+	bool shake = false;
 
 public:
 	Player();
