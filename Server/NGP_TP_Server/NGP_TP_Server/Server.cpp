@@ -309,7 +309,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
             //促弗 蜡历客 面倒贸府
             for (User& u : users) {
-                if ((int)client_sock != now_user.GetId())
+                if ((int)client_sock != u.GetId())
                     now_user.CrushCheck(u);
             }
 
