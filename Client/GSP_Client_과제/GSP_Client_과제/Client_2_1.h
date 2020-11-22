@@ -23,7 +23,7 @@ using namespace std;
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
 #define ITEM_SPEEDUP	2		//속도 증가 아이템 계수
-#define SPEEDUP_TIME	2	//속도 증가 시간
+#define SPEEDUP_TIME	1.0f	//속도 증가 시간
 #define ITEM_TYPE		false	//속도향상(false), 스턴(true)
 #define USERLOGIN		false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE			false	//패배(true) 승리(false)
@@ -174,7 +174,7 @@ class Player {
 	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
 	Key move_direction;
 	short term = 0;
-	short item_term = SPEEDUP_TIME;
+	float item_term = SPEEDUP_TIME;
 	short item_type = 0;
 	bool shake = false;
 

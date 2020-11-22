@@ -443,8 +443,6 @@ int main(int argc, char** argv)
 
 Player::Player() {
 	prev_x = 400, prev_y = 200;
-	//size = 20.f;
-	//prev_size = 20.f;
 }
 void Player::show() {
 	glBegin(GL_POLYGON);
@@ -456,6 +454,7 @@ void Player::show() {
 		if (item_type == 1) {
 			move_speed = MOVE_SPEED * ITEM_SPEEDUP * deltaTime;
 			item_term -= deltaTime;
+			cout << item_term << endl;
 			if (item_term < 0) {
 				item_term = SPEEDUP_TIME;
 				item_type = 0;
@@ -497,14 +496,14 @@ void Player::show() {
 		}
 	}
 	else {
-		item_term -= deltaTime * 100;
+		item_term -= deltaTime;
 		if (shake == false) {
-			x += MOVE_SPEED * deltaTime;
+			x += MOVE_SPEED / 100;
 			DataToServer();
 			shake = true;
 		}
 		else {
-			x -= MOVE_SPEED * deltaTime;
+			x -= MOVE_SPEED / 100;
 			DataToServer();
 			shake = false;
 		}
