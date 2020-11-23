@@ -201,7 +201,7 @@ void processdata(char* buf) {
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
 		player.SetId(pp->id);
-		cout << player.GetXpos() << " " << player.GetYpos() << endl;
+		//cout << player.GetXpos() << " " << player.GetYpos() << endl;
 		break;
 	}
 	case SC_LOGIN: {
@@ -271,7 +271,7 @@ void processdata(char* buf) {
 		}
 		trap[tup->trap_index].SetXpos(tup->trap_x);
 		trap[tup->trap_index].SetYpos(tup->trap_y);
-		cout << trap[tup->trap_index].GetXpos() << " "<< trap[tup->trap_index].GetYpos() << endl;
+		//cout << trap[tup->trap_index].GetXpos() << " "<< trap[tup->trap_index].GetYpos() << endl;
 		break;
 	}
 	case SC_ALL_ITEM: 
@@ -298,7 +298,7 @@ void processdata(char* buf) {
 		item[itp->item_index].SetYpos(itp->item_y);
 		
 
-		cout << "ITEM TYPE:" <<itp->item_type << endl;
+		//cout << "ITEM TYPE:" <<itp->item_type << endl;
 		break;
 	}
 	case SC_USER_SIZE:
@@ -454,7 +454,7 @@ void Player::show() {
 		if (item_type == 1) {
 			move_speed = MOVE_SPEED * ITEM_SPEEDUP * deltaTime;
 			item_term -= deltaTime;
-			cout << item_term << endl;
+			//cout << item_term << endl;
 			if (item_term < 0) {
 				item_term = SPEEDUP_TIME;
 				item_type = 0;
@@ -628,12 +628,16 @@ Key Player::GetKeybordInput() {
 User::User() {
 	x = enemy_position_NUM(dre);
 	y = enemy_position_NUM(dre);
-	//size = 20.f;
+
+	color_r = uiNUM(dre) / 255.f;
+	color_g = uiNUM(dre) / 255.f;
+	color_b = uiNUM(dre) / 255.f;
+
 	id = 0;
 }
 void User::show() {
 	glBegin(GL_POLYGON);
-	glColor3f(1.0, 0.0, 0.0);
+	glColor3f(color_r, color_g, color_b);
 
 	for (int i = 0; i < 360; i++)
 	{
