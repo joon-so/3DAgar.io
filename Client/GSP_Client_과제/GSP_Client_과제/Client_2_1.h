@@ -18,7 +18,7 @@ using namespace std;
 
 #define w_width			1200	//윈도우창 가로 크기
 #define w_height		800		//윈도우창 세로 크기
-#define MOVE_SPEED		500		//카메라 움직이는 기본 속도
+#define MOVE_SPEED		300		//카메라 움직이는 기본 속도
 #define MAP_SIZE		50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
@@ -227,6 +227,9 @@ class User {
 	short x;
 	short y;
 	float size = 20.f;
+	float color_r = uiNUM(dre) / 255.f;
+	float color_g = uiNUM(dre) / 255.f;
+	float color_b = uiNUM(dre) / 255.f;
 
 public:
 	User();
