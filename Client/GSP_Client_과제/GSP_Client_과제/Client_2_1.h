@@ -16,7 +16,7 @@ using namespace std;
 #define SERVER_PORT		9000
 #define SERVER_IP		"127.0.0.1"	// 자기 자신의 주소는 항상 127.0.0.1
 
-#define w_width			1200	//윈도우창 가로 크기
+#define w_width			800	//윈도우창 가로 크기
 #define w_height		800		//윈도우창 세로 크기
 #define MOVE_SPEED		500		//카메라 움직이는 기본 속도
 #define MAP_SIZE		50.f	//맵 한칸당 크기

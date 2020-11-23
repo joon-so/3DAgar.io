@@ -188,7 +188,7 @@ void myInit(void)
 	glPointSize(4.0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0.0, w_width, 0.0, w_height);
+	gluOrtho2D(0.0, 1200, 0.0, w_height);
 }
 
 //서버에서 온 데이터 타입별로 처리
