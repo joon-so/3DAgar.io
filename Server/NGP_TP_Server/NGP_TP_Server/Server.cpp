@@ -325,9 +325,16 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             for (int i = 0; i < ITEM_COUNT; i++) {
                 item[i].CrushCheck(now_user, i);
             }
-            //현재 이새끼 아이디, 크기, 먹이배열의 인덱스, x, y
+
 
             //cout << client_sock << " x = " << x << " y = " << y << endl;
+            break;
+        }
+        case CS_CHAT:
+        {
+            cs_chat_packet* cp = reinterpret_cast<cs_chat_packet*>(buf);
+            
+            cout << "Chatting<" << cp->id << ">: " << cp->chat<< " " <<  sizeof(cp->chat)<< endl;
             break;
         }
         default:

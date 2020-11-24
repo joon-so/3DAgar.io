@@ -16,7 +16,7 @@ using namespace std;
 #define SERVER_PORT		9000
 #define SERVER_IP		"127.0.0.1"	// 자기 자신의 주소는 항상 127.0.0.1
 
-#define w_width			800	//윈도우창 가로 크기
+#define w_width			1200	//윈도우창 가로 크기
 #define w_height		800		//윈도우창 세로 크기
 #define MOVE_SPEED		300		//카메라 움직이는 기본 속도
 #define MAP_SIZE		50.f	//맵 한칸당 크기
@@ -27,11 +27,13 @@ using namespace std;
 #define ITEM_TYPE		false	//속도향상(false), 스턴(true)
 #define USERLOGIN		false	//유저 로그아웃(false), 유저 로그인(true)
 #define LOSE			false	//패배(true) 승리(false)
-#define SEND_TERM		5
+#define SEND_TERM		2
+#define MAX_CHAT_SIZE 100
 
 float deltaTime = 0.f;
 float lastCheckTime = 0.f;
 float currentTime = 0.f;
+bool chatfunc = false;
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -50,6 +52,8 @@ constexpr char SC_ALL_ITEM = 9;
 
 constexpr char SC_ITEM_USER = 10;
 constexpr char SC_USER_SIZE = 11;
+
+constexpr char CS_CHAT = 12;
 
 enum KeyInput
 {
@@ -74,6 +78,7 @@ SOCKET serverSocket;
 void error_display(const char* msg, int err_no);
 void myDisplay(void);
 void moveCamera();
+void ShowRank();
 void chattingFunc();
 void handleKeyboard(int key, int x, int y);
 void handleKeyboardUp(int key, int x, int y);
@@ -157,6 +162,13 @@ typedef struct sc_user_size_packet
 	float  size;
 
 }sc_user_size_packet;
+
+typedef struct cs_chat_packet
+{
+	char type;
+	int id;
+	char chat[MAX_CHAT_SIZE];
+}cs_chat_packet;
 
 typedef struct Key {
 	bool Arrow_Up = false;

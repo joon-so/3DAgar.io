@@ -14,6 +14,7 @@ using namespace std;
 #define MAP_SIZE	    50.f	//¸Ê ÇÑÄ­´ç Å©±â
 #define FEED_MAX_NUM    500
 #define ITEM_COUNT      20
+#define MAX_CHAT_SIZE 100
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;
@@ -32,6 +33,8 @@ constexpr char SC_ALL_ITEM = 9;
 
 constexpr char SC_ITEM_USER = 10;
 constexpr char SC_USER_SIZE = 11;
+
+constexpr char CS_CHAT = 12;
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
@@ -108,6 +111,13 @@ typedef struct sc_user_size_packet
     float  size;
 
 }sc_user_size_packet;
+
+typedef struct cs_chat_packet
+{
+    char type;
+    int id;
+    char chat[MAX_CHAT_SIZE];
+}cs_chat_packet;
 
 class User {
     int id;

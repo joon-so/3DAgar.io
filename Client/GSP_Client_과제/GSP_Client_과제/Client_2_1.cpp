@@ -57,6 +57,15 @@ void DrawMap()
 	}
 }
 
+void ShowRank()
+{
+	//sort User vector
+	
+
+	//show rank 최대 5개 까지만
+
+}
+
 void myDisplay(void)
 {
 	/* Delta time in seconds. */
@@ -89,8 +98,6 @@ void myDisplay(void)
 	for (int i = 0; i < ITEM_COUNT; i++)
 		item[i].show();
 
-	//플레이어 출력
-	player.show();
 
 	//gluOrtho2D(player.GetXpos() - 400, p+layer.GetXpos() + 400, player.GetYpos() - 400, player.GetYpos() + 400);
 	//gluOrtho2D(-1, 1, -1, 1);
@@ -103,6 +110,10 @@ void myDisplay(void)
 		user.show();
 	}
 
+	//플레이어 출력
+	player.show();
+
+
 	glFlush();
 }
 
@@ -113,22 +124,51 @@ void moveCamera()
 	player.SetPrevYpos(player.GetYpos());
 }
 
+void SendChatting(char chat[MAX_CHAT_SIZE]) {
+	cs_chat_packet cp;
+	char buf[MAX_BUFFER];
+	int retval;
+
+	cp.type = CS_CHAT;
+	cp.id = player.GetId();
+	memcpy(cp.chat, chat, sizeof(chat));
+
+	int size = sizeof(cs_chat_packet);
+
+	retval = send(serverSocket, (char*)&size, sizeof(int), 0);
+
+	retval = send(serverSocket, (char*)&cp, sizeof(cs_chat_packet), 0);
+}
+
+
 DWORD WINAPI Chatting(LPVOID arg)
 {
-	char chat[100];
+	char chat[MAX_CHAT_SIZE];
 	ZeroMemory(&chat, sizeof(chat));
 
 	cout << "Chatting: ";
-	cin >> chat;
+	int cnt = 0;
+	while (1) {
+		char ch;
+		cin.get(ch);
+		if (ch == '\n')
+			break;
+		chat[cnt] = ch;
+		cnt += 1;
+	}
 
 	cout << chat << endl;
+	SendChatting(chat);
+	//채팅 전송
+
 	cout << "쓰레드 종료" << endl;
+	chatfunc = false;
 	return 0;
 }
 
 void chattingFunc()
 {
-	int i = 0;
+	chatfunc = true;
 	HANDLE hTread;
 	hTread = CreateThread(NULL, 0, Chatting,
 		0, 0, NULL);
@@ -156,7 +196,8 @@ void handleKeyboard(int key, int x, int y)
 		player.SetMoveDirection(KEY_RIGHT_DOWN);
 		break;
 	case GLUT_KEY_F1:
-		chattingFunc();
+		if(chatfunc==false)
+			chattingFunc();
 	}
 	glutPostRedisplay();
 }
