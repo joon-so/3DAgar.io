@@ -57,6 +57,90 @@ void DrawMap()
 	}
 }
 
+void ShowLose()
+{
+	glBegin(GL_COLOR_BUFFER_BIT);
+	glColor3f(0.0f, 0.f, 0.f);
+	short x = player.GetXpos() - 400;
+	short y = player.GetYpos() + 100;
+	//x =500
+	//y = 500
+	//Y
+	//좌상향
+	glRectf(x, y, x + 20, y -20);
+	glRectf(x + 10, y - 10, x + 30, y - 30);
+	glRectf(x + 20, y - 20, x + 40, y - 40);
+	glRectf(x + 30, y - 30, x + 50, y - 50);
+	//우상향
+	glRectf(x + 50, y - 30, x + 70, y - 50);
+	glRectf(x + 60, y - 20, x + 80, y - 40);
+	glRectf(x + 70, y - 10, x + 90, y - 30);
+	glRectf(x + 80, y, x + 100.f, y - 20);
+	//직선
+	glRectf(x + 40, y - 50, x + 60, y - 110);
+
+	//O
+	glRectf(x + 120, y - 20, x + 140, y - 90);
+
+	glRectf(x + 130, y - 10, x + 150, y - 30);
+	glRectf(x + 140, y, x + 180, y - 20);
+	glRectf(x + 170, y - 10, x + 190.f, y - 30);
+
+	glRectf(x + 180, y - 20, x + 200, y - 90);
+
+	glRectf(x + 130, y - 80, x + 150, y - 100);
+	glRectf(x + 140, y - 90, x + 180, y - 110);
+	glRectf(x + 170, y - 80, x + 190, y - 100);
+
+	//U
+	glRectf(x + 230, y, x + 250, y - 90);
+
+	glRectf(x + 240, y - 80, x + 260, y - 100);
+	glRectf(x + 250, y - 90, x + 290, y - 110);
+	glRectf(x + 280, y - 80, x + 300, y - 100);
+
+	glRectf(x + 290, y, x + 310, y - 90);
+
+	//L
+	glColor3f(1.0f, 0.f, 0.f);
+	glRectf(x + 420, y, x + 440, y - 110);
+	glRectf(x + 420, y - 90, x + 500, y - 110);
+
+	//O
+	glRectf(x + 520, y - 20, x + 540, y - 90);
+						   	
+	glRectf(x + 530, y - 10, x + 550, y - 30);
+	glRectf(x + 540, y, x + 580, y - 20);
+	glRectf(x + 580, y - 10, x + 590, y - 30);
+
+	glRectf(x + 580, y - 20, x + 600, y - 90);
+
+	glRectf(x + 530, y - 80, x + 550, y - 100);
+	glRectf(x + 540, y - 90, x + 580, y - 110);
+	glRectf(x + 580, y - 80, x + 590, y - 100);
+
+	//S
+	glRectf(x + 630, y - 10, x + 650, y - 30);
+	glRectf(x + 640, y, x + 690, y - 20);
+	glRectf(x + 680, y - 10, x + 700, y - 30);
+
+	glRectf(x + 630, y - 30, x + 650, y - 55);
+	glRectf(x + 640, y - 45, x + 690, y - 65);
+	glRectf(x + 680, y - 55, x + 700, y - 95);
+
+	glRectf(x + 630, y - 80, x + 650, y - 100);
+	glRectf(x + 640, y - 90, x + 690, y - 110);
+	glRectf(x + 680, y - 80, x + 700, y - 100);
+
+	//E
+	glRectf(x + 730, y, x + 750, y - 110);
+	glRectf(x + 730, y, x + 800, y - 20);
+	glRectf(x + 730, y - 45, x + 800, y - 65);
+	glRectf(x + 730, y - 90, x + 800, y - 110);
+
+	glEnd();
+}
+
 void ShowRank()
 {
 	//sort User vector
@@ -111,8 +195,10 @@ void myDisplay(void)
 	}
 
 	//플레이어 출력
-	player.show();
-
+	if (player.GetLife())
+		player.show();
+	else
+		ShowLose();
 
 	glFlush();
 }
@@ -131,7 +217,7 @@ void SendChatting(char chat[MAX_CHAT_SIZE]) {
 
 	cp.type = CS_CHAT;
 	cp.id = player.GetId();
-	memcpy(cp.chat, chat, sizeof(chat));
+	memcpy(cp.chat, chat, sizeof(cp.chat));
 
 	int size = sizeof(cs_chat_packet);
 
@@ -155,6 +241,8 @@ DWORD WINAPI Chatting(LPVOID arg)
 			break;
 		chat[cnt] = ch;
 		cnt += 1;
+		if(cnt >= MAX_CHAT_SIZE)
+			break;
 	}
 
 	cout << chat << endl;
@@ -363,6 +451,7 @@ void processdata(char* buf) {
 		if (player.GetId() == lop->id)
 		{
 			cout << "플레이어 종료!" << endl;
+			player.SetLife(false);
 			closesocket(serverSocket);
 			WSACleanup();
 		}
@@ -637,6 +726,10 @@ void Player::SetItem(short i)
 {
 	item_type = i;
 }
+void Player::SetLife(bool newlife)
+{
+	life = newlife;
+}
 short Player::GetId() {
 	return id;
 }
@@ -661,6 +754,10 @@ float Player::GetPrevSize() {
 short Player::GetItem()
 {
 	return item_type;
+}
+bool Player::GetLife()
+{
+	return life;
 }
 Key Player::GetKeybordInput() {
 	return move_direction;

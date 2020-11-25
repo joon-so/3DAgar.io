@@ -18,7 +18,7 @@ using namespace std;
 
 #define w_width			1200	//윈도우창 가로 크기
 #define w_height		800		//윈도우창 세로 크기
-#define MOVE_SPEED		300		//카메라 움직이는 기본 속도
+#define MOVE_SPEED		800		//카메라 움직이는 기본 속도
 #define MAP_SIZE		50.f	//맵 한칸당 크기
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
@@ -89,6 +89,7 @@ void BuildBoard(int argc, char** argv);
 void DataToServer();
 void DrawLine(float start_x, float start_y, float end_x, float end_y);
 void DrawMap();
+void ShowLose();
 int recvn(SOCKET s, char* buf, int len, int flags);
 
 typedef struct sc_user_move_packet
@@ -189,6 +190,7 @@ class Player {
 	float item_term = SPEEDUP_TIME;
 	short item_type = 0;
 	bool shake = false;
+	bool life = true;
 
 public:
 	Player();
@@ -214,6 +216,8 @@ public:
 	void SetMoveDirection(int i);
 	//캐릭터 아이템 효과 설정
 	void SetItem(short i);
+	//플레이어 생명 설정
+	void SetLife(bool newlife);
 	//id좌표 리턴
 	short GetId();
 	//x좌표 리턴
@@ -230,6 +234,8 @@ public:
 	float GetPrevSize();
 	//캐릭터 아이템 효과 리턴
 	short GetItem();
+	//플레이어 생명 리턴
+	bool GetLife();
 	//키보드 입력 상태 리턴
 	Key GetKeybordInput();
 };
