@@ -9,6 +9,7 @@
 #include<vector>
 #include<random>
 #include <algorithm>
+#include <queue>
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
@@ -55,6 +56,7 @@ constexpr char SC_ITEM_USER = 10;
 constexpr char SC_USER_SIZE = 11;
 
 constexpr char CS_CHAT = 12;
+constexpr char SC_CHAT = 13;
 
 enum KeyInput
 {
@@ -79,7 +81,7 @@ SOCKET serverSocket;
 void error_display(const char* msg, int err_no);
 void myDisplay(void);
 void moveCamera();
-void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font);
+void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font, bool is_player);
 void ShowRank();
 void chattingFunc();
 void handleKeyboard(int key, int x, int y);
@@ -172,6 +174,13 @@ typedef struct cs_chat_packet
 	int id;
 	char chat[MAX_CHAT_SIZE];
 }cs_chat_packet;
+
+struct ChatData {
+	int id;
+	char chat[MAX_CHAT_SIZE];
+};
+
+queue<ChatData> chatqueue;
 
 typedef struct Key {
 	bool Arrow_Up = false;

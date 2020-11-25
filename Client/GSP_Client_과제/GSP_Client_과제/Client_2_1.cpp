@@ -146,7 +146,7 @@ void ShowRank()
 	//show my id
 	char playerName[10];
 	sprintf(playerName, "%d", player.GetId());
-	DrawTexte(player.GetXpos() - 15, player.GetYpos()-5, playerName, GLUT_BITMAP_HELVETICA_18);
+	DrawTexte(player.GetXpos() - 15, player.GetYpos()-5, playerName, GLUT_BITMAP_HELVETICA_18, false);
 
 	//sort User vector
 	for (int i = 0; i < 5; i++) {
@@ -160,16 +160,44 @@ void ShowRank()
 		sprintf(cx, "RANK%d %d: ", i + 1, user_rank[user_rank.size() - 1 - i].GetId());
 		sprintf(cy, "%.1f", user_rank[user_rank.size() - 1 - i].GetSize());
 		strcat(cx, cy);
-		DrawTexte(player.GetXpos() - 580, player.GetYpos() + 370 - 15 * i, cx, GLUT_BITMAP_HELVETICA_18);
+
+		bool is_player = false;
+
+		if (user_rank[user_rank.size() - 1 - i].GetId() == player.GetId())
+			is_player = true;
+
+		DrawTexte(player.GetXpos() - 580, player.GetYpos() + 370 - 15 * i, cx, GLUT_BITMAP_HELVETICA_18, is_player);
 	}
 }
 
+void ShowChat()
+{
+	queue<ChatData> temp;
+
+	for (int i = 0; i < 5; i++)
+	{
+		if (!chatqueue.empty()) {
+			cout << chatqueue.front().chat << endl;
+			ChatData cd;
+			cd.id = chatqueue.front().id;
+			memcpy(cd.chat, chatqueue.front().chat, sizeof(chatqueue.front().chat));
+			chatqueue.pop();
+			temp.push(cd);
+		}
+		else break;
+	}
+	chatqueue = temp;
+}
+
 // draw text on screen
-void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font)
+void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font, bool is_player)
 {
 	double FontWidth = 0.02;
 
-	glColor3f(0, 0, 0);
+	if(is_player==true)
+		glColor3f(1, 0, 0);
+	else
+		glColor3f(0, 0, 0);
 
 	int len = (int)strlen(strMsg);
 	glRasterPos3d(WinPosX, WinPosY, 0);
@@ -363,8 +391,8 @@ void processdata(char* buf) {
 		player.SetYpos(pp->y);
 		player.SetId(pp->id);
 
+		//랭크 벡터에 현재 플레이어 추가
 		User u(player.GetId(), player.GetXpos(), player.GetYpos(), player.GetSize());
-
 		user_rank.push_back(u);
 		break;
 	}
@@ -520,6 +548,24 @@ void processdata(char* buf) {
 			}
 		}
 		sort(user_rank.begin(), user_rank.end());
+		break;
+	}
+	case SC_CHAT:
+	{
+		cs_chat_packet* cp = reinterpret_cast<cs_chat_packet*>(buf);
+		//cout << "Chatting" << endl;
+		//cout << cp->id << endl;
+		//cout << cp->chat << endl;
+
+		ChatData cd;
+		cd.id = cp->id;
+		memcpy(cd.chat, cp->chat, sizeof(cp->chat));
+		chatqueue.push(cd);
+
+		if (chatqueue.size() > 5)
+			chatqueue.pop();
+
+		ShowChat();
 		break;
 	}
 	case SC_LOGOUT: {

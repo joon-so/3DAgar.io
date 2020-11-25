@@ -180,7 +180,6 @@ void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short
     retval = send(soc, (char*)&fup, sizeof(sc_feedNuser_packet), 0);
 }
 
-
 void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty)
 {
     sc_trapNuser_packet tup;
@@ -262,6 +261,24 @@ void send_user_size_packet(SOCKET soc, int uid, float usize)
     //cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
 }
 
+void send_chat_packet(SOCKET soc, cs_chat_packet* cp)
+{
+    cs_chat_packet scp;
+    char buf[MAX_BUFFER];
+    int retval;
+
+    scp.type = SC_CHAT;
+    scp.id = cp->id;
+    memcpy(scp.chat, cp->chat, sizeof(cp->chat));
+
+    int size = sizeof(cs_chat_packet);
+
+    retval = send(soc, (char*)&size, sizeof(int), 0);
+
+    retval = send(soc, (char*)&scp, sizeof(cs_chat_packet), 0);
+}
+
+
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
@@ -334,6 +351,10 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         {
             cs_chat_packet* cp = reinterpret_cast<cs_chat_packet*>(buf);
             
+            for (User& u : users) {
+                send_chat_packet((SOCKET)u.GetId(), cp);
+            }
+
             cout << "Chatting<" << cp->id << ">: " << cp->chat<< " " <<  sizeof(cp->chat)<< endl;
             break;
         }

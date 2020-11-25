@@ -35,6 +35,7 @@ constexpr char SC_ITEM_USER = 10;
 constexpr char SC_USER_SIZE = 11;
 
 constexpr char CS_CHAT = 12;
+constexpr char SC_CHAT = 13;
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
