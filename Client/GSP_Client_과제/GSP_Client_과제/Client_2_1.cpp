@@ -366,7 +366,6 @@ void processdata(char* buf) {
 		User u(player.GetId(), player.GetXpos(), player.GetYpos(), player.GetSize());
 
 		user_rank.push_back(u);
-		//cout << player.GetXpos() << " " << player.GetYpos() << endl;
 		break;
 	}
 	case SC_LOGIN: {
@@ -374,8 +373,9 @@ void processdata(char* buf) {
 		User u(lp->id, lp->x, lp->y, lp->size);
 		users.push_back(u);
 		user_rank.push_back(u);
-		//
+
 		sort(user_rank.begin(), user_rank.end());
+
 		cout << "새로운 유저 추가" <<  lp->id <<" "<< lp->x << " " << lp->y <<endl;
 		break;
 	}
@@ -404,7 +404,6 @@ void processdata(char* buf) {
 		if (afp->user_id == player.GetId())
 		{
 			player.SetSize(afp->user_size);
-			//
 			for (User& u : user_rank) {
 				if (afp->user_id == u.GetId()) {
 					u.SetSize(afp->user_size);
@@ -417,7 +416,6 @@ void processdata(char* buf) {
 				if (afp->user_id == u.GetId())
 					u.SetSize(afp->user_size);
 			}
-			//
 			for (User& u : user_rank) {
 				if (afp->user_id == u.GetId()) {
 					u.SetSize(afp->user_size);
@@ -427,7 +425,6 @@ void processdata(char* buf) {
 		}
 		feed[afp->feed_index].SetXpos(afp->feed_x);
 		feed[afp->feed_index].SetYpos(afp->feed_y);
-		//
 		sort(user_rank.begin(), user_rank.end());
 
 		break;
@@ -446,7 +443,6 @@ void processdata(char* buf) {
 		if (tup->user_id == player.GetId())
 		{
 			player.SetSize(tup->user_size);
-			//
 			for (User& u : user_rank) {
 				if (tup->user_id == u.GetId()) {
 					u.SetSize(tup->user_size);
@@ -459,7 +455,6 @@ void processdata(char* buf) {
 				if (tup->user_id == u.GetId())
 					u.SetSize(tup->user_size);
 			}
-			//
 			for (User& u : user_rank) {
 				if (tup->user_id == u.GetId()) {
 					u.SetSize(tup->user_size);
@@ -470,7 +465,6 @@ void processdata(char* buf) {
 		trap[tup->trap_index].SetXpos(tup->trap_x);
 		trap[tup->trap_index].SetYpos(tup->trap_y);
 
-				//
 		sort(user_rank.begin(), user_rank.end());
 		break;
 	}
@@ -496,9 +490,7 @@ void processdata(char* buf) {
 
 		item[itp->item_index].SetXpos(itp->item_x);
 		item[itp->item_index].SetYpos(itp->item_y);
-		
 
-		//cout << "ITEM TYPE:" <<itp->item_type << endl;
 		break;
 	}
 	case SC_USER_SIZE:
@@ -507,7 +499,6 @@ void processdata(char* buf) {
 		if (player.GetId() == usp->id)
 		{
 			player.SetSize(usp->size);
-			//
 			for (User& u : user_rank) {
 				if (player.GetId() == u.GetId()) {
 					u.SetSize(usp->size);
@@ -521,7 +512,6 @@ void processdata(char* buf) {
 				if (u.GetId() == usp->id)
 					u.SetSize(usp->size);
 
-			//
 			for (User& u : user_rank) {
 				if (usp->id == u.GetId()) {
 					u.SetSize(usp->size);
@@ -553,7 +543,6 @@ void processdata(char* buf) {
 				++iter;
 			}
 		}
-		//
 		iter = user_rank.begin();
 		while (iter != user_rank.end())
 		{
@@ -683,7 +672,6 @@ void Player::show() {
 		if (item_type == 1) {
 			move_speed = MOVE_SPEED * ITEM_SPEEDUP * deltaTime;
 			item_term -= deltaTime;
-			//cout << item_term << endl;
 			if (item_term < 0) {
 				item_term = SPEEDUP_TIME;
 				item_type = 0;
@@ -747,6 +735,15 @@ void Player::show() {
 		size = size / 2.f;
 		if (size < 20.f)
 			size = 20.f;
+
+		for (User& u : user_rank) {
+			if (player.GetId() == u.GetId()) {
+				u.SetSize(player.GetSize());
+				break;
+			}
+		}
+		sort(user_rank.begin(), user_rank.end());
+
 		x = 50 * MAP_SIZE - size;
 		move_direction.Arrow_Right = false;
 	}
@@ -754,20 +751,47 @@ void Player::show() {
 		size = size / 2.f;
 		if (size < 20.f)
 			size = 20.f;
+
+		for (User& u : user_rank) {
+			if (player.GetId() == u.GetId()) {
+				u.SetSize(player.GetSize());
+				break;
+			}
+		}
+		sort(user_rank.begin(), user_rank.end());
+
 		y = 50 * MAP_SIZE - size;
 		move_direction.Arrow_Up = false;
 	}
-	else if (-50 * MAP_SIZE > x - size) {
+	if (-50 * MAP_SIZE > x - size) {
 		size = size / 2.f;
 		if (size < 20.f)
 			size = 20.f;
+
+		for (User& u : user_rank) {
+			if (player.GetId() == u.GetId()) {
+				u.SetSize(player.GetSize());
+				break;
+			}
+		}
+		sort(user_rank.begin(), user_rank.end());
+
 		x = -50 * MAP_SIZE + size;
 		move_direction.Arrow_Left = false;
 	}
-	if (-50 * MAP_SIZE > y - size) {
+	else if (-50 * MAP_SIZE > y - size) {
 		size = size / 2.f;
 		if (size < 20.f)
 			size = 20.f;
+
+		for (User& u : user_rank) {
+			if (player.GetId() == u.GetId()) {
+				u.SetSize(player.GetSize());
+				break;
+			}
+		}
+		sort(user_rank.begin(), user_rank.end());
+
 		y = -50 * MAP_SIZE + size;
 		move_direction.Arrow_Down = false;
 	}

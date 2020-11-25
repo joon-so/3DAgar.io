@@ -308,7 +308,7 @@ public:
             x = enemy_position_NUM(dre);
             y = enemy_position_NUM(dre);
 
-            user.SetSize(user.GetSize() * 0.3f);
+            user.SetSize(user.GetSize() * 0.8f);
             if (user.GetSize() < 20.f)
                 user.SetSize(20.f);
 
