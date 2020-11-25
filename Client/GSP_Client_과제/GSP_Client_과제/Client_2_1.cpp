@@ -143,11 +143,40 @@ void ShowLose()
 
 void ShowRank()
 {
+	//show my id
+	char playerName[10];
+	sprintf(playerName, "%d", player.GetId());
+	DrawTexte(player.GetXpos() - 15, player.GetYpos()-5, playerName, GLUT_BITMAP_HELVETICA_18);
+
 	//sort User vector
-	
+	for (int i = 0; i < 5; i++) {
+		//좌표 표시
+		char cx[30];
+		char cy[30];
 
-	//show rank 최대 5개 까지만
+		if (user_rank.size() < i + 1)
+			break;
 
+		sprintf(cx, "RANK%d %d: ", i + 1, user_rank[user_rank.size() - 1 - i].GetId());
+		sprintf(cy, "%.1f", user_rank[user_rank.size() - 1 - i].GetSize());
+		strcat(cx, cy);
+		DrawTexte(player.GetXpos() - 580, player.GetYpos() + 370 - 15 * i, cx, GLUT_BITMAP_HELVETICA_18);
+	}
+}
+
+// draw text on screen
+void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font)
+{
+	double FontWidth = 0.02;
+
+	glColor3f(0, 0, 0);
+
+	int len = (int)strlen(strMsg);
+	glRasterPos3d(WinPosX, WinPosY, 0);
+	for (int i = 0; i < len; ++i)
+	{
+		glutBitmapCharacter(font, strMsg[i]);
+	}
 }
 
 void myDisplay(void)
@@ -195,10 +224,13 @@ void myDisplay(void)
 	}
 
 	//플레이어 출력
-	if (player.GetLife())
+	if (player.GetLife()) {
 		player.show();
+		ShowRank();
+	}
 	else
 		ShowLose();
+
 
 	glFlush();
 }
@@ -330,6 +362,10 @@ void processdata(char* buf) {
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
 		player.SetId(pp->id);
+
+		User u(player.GetId(), player.GetXpos(), player.GetYpos(), player.GetSize());
+
+		user_rank.push_back(u);
 		//cout << player.GetXpos() << " " << player.GetYpos() << endl;
 		break;
 	}
@@ -337,6 +373,9 @@ void processdata(char* buf) {
 		sc_login_packet* lp = reinterpret_cast<sc_login_packet*>(buf);
 		User u(lp->id, lp->x, lp->y, lp->size);
 		users.push_back(u);
+		user_rank.push_back(u);
+		//
+		sort(user_rank.begin(), user_rank.end());
 		cout << "새로운 유저 추가" <<  lp->id <<" "<< lp->x << " " << lp->y <<endl;
 		break;
 	}
@@ -365,15 +404,31 @@ void processdata(char* buf) {
 		if (afp->user_id == player.GetId())
 		{
 			player.SetSize(afp->user_size);
+			//
+			for (User& u : user_rank) {
+				if (afp->user_id == u.GetId()) {
+					u.SetSize(afp->user_size);
+					break;
+				}
+			}
 		}
 		else {
 			for (User& u : users) {
 				if (afp->user_id == u.GetId())
 					u.SetSize(afp->user_size);
 			}
+			//
+			for (User& u : user_rank) {
+				if (afp->user_id == u.GetId()) {
+					u.SetSize(afp->user_size);
+					break;
+				}
+			}
 		}
 		feed[afp->feed_index].SetXpos(afp->feed_x);
 		feed[afp->feed_index].SetYpos(afp->feed_y);
+		//
+		sort(user_rank.begin(), user_rank.end());
 
 		break;
 	}
@@ -391,16 +446,32 @@ void processdata(char* buf) {
 		if (tup->user_id == player.GetId())
 		{
 			player.SetSize(tup->user_size);
+			//
+			for (User& u : user_rank) {
+				if (tup->user_id == u.GetId()) {
+					u.SetSize(tup->user_size);
+					break;
+				}
+			}
 		}
 		else {
 			for (User& u : users) {
 				if (tup->user_id == u.GetId())
 					u.SetSize(tup->user_size);
 			}
+			//
+			for (User& u : user_rank) {
+				if (tup->user_id == u.GetId()) {
+					u.SetSize(tup->user_size);
+					break;
+				}
+			}
 		}
 		trap[tup->trap_index].SetXpos(tup->trap_x);
 		trap[tup->trap_index].SetYpos(tup->trap_y);
-		//cout << trap[tup->trap_index].GetXpos() << " "<< trap[tup->trap_index].GetYpos() << endl;
+
+				//
+		sort(user_rank.begin(), user_rank.end());
 		break;
 	}
 	case SC_ALL_ITEM: 
@@ -436,14 +507,29 @@ void processdata(char* buf) {
 		if (player.GetId() == usp->id)
 		{
 			player.SetSize(usp->size);
+			//
+			for (User& u : user_rank) {
+				if (player.GetId() == u.GetId()) {
+					u.SetSize(usp->size);
+					break;
+				}
+			}
 		}
 		else
 		{
 			for (User& u : users)
 				if (u.GetId() == usp->id)
 					u.SetSize(usp->size);
-		}
 
+			//
+			for (User& u : user_rank) {
+				if (usp->id == u.GetId()) {
+					u.SetSize(usp->size);
+					break;
+				}
+			}
+		}
+		sort(user_rank.begin(), user_rank.end());
 		break;
 	}
 	case SC_LOGOUT: {
@@ -461,6 +547,19 @@ void processdata(char* buf) {
 			if (iter->GetId() == lop->id)
 			{
 				iter = users.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
+		}
+		//
+		iter = user_rank.begin();
+		while (iter != user_rank.end())
+		{
+			if (iter->GetId() == lop->id)
+			{
+				iter = user_rank.erase(iter);
 			}
 			else
 			{
@@ -801,7 +900,7 @@ short User::GetXpos() {
 short User::GetYpos() {
 	return y;
 }
-float User::GetSize() {
+float User::GetSize() const {
 	return size;
 }
 int User::GetId() const {

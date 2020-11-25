@@ -8,6 +8,7 @@
 #include <string>
 #include<vector>
 #include<random>
+#include <algorithm>
 #pragma comment(lib, "Ws2_32.lib")
 
 using namespace std;
@@ -78,6 +79,7 @@ SOCKET serverSocket;
 void error_display(const char* msg, int err_no);
 void myDisplay(void);
 void moveCamera();
+void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font);
 void ShowRank();
 void chattingFunc();
 void handleKeyboard(int key, int x, int y);
@@ -266,12 +268,16 @@ public:
 	//y谅钎 府畔
 	short GetYpos();
 	//size 府畔
-	float GetSize();
+	float GetSize() const;
 	//id 府畔
 	int GetId() const;
 
 	bool operator==(const User& rhs) const {
 		return GetId() == rhs.GetId();
+	};
+
+	bool operator<(const User& rhs) const {
+		return size < rhs.GetSize();
 	};
 };
 
@@ -358,6 +364,7 @@ public:
 };
 
 vector<User> users;				//User Vector
+vector<User> user_rank;			//User rank
 Player player;					//player 积己
 Feed feed[FEED_MAX_NUM];		//冈捞 积己
 Item item[ITEM_COUNT];			//酒捞袍 积己
