@@ -82,7 +82,7 @@ void error_display(const char* msg, int err_no);
 void myDisplay(void);
 void moveCamera();
 void DrawTexte(int WinPosX, int WinPosY, const char* strMsg, void* font, bool is_player);
-void ShowRank();
+void ShowDisplay();
 void chattingFunc();
 void handleKeyboard(int key, int x, int y);
 void handleKeyboardUp(int key, int x, int y);

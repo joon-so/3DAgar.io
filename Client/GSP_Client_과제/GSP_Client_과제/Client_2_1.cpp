@@ -141,7 +141,7 @@ void ShowLose()
 	glEnd();
 }
 
-void ShowRank()
+void ShowDisplay()
 {
 	//show my id
 	char playerName[10];
@@ -168,16 +168,23 @@ void ShowRank()
 
 		DrawTexte(player.GetXpos() - 580, player.GetYpos() + 370 - 15 * i, cx, GLUT_BITMAP_HELVETICA_18, is_player);
 	}
+
 }
 
 void ShowChat()
 {
 	queue<ChatData> temp;
 
+	DrawTexte(player.GetXpos() - 580, player.GetYpos() - 250, "<<CHATTING>>", GLUT_BITMAP_HELVETICA_18, false);
+
 	for (int i = 0; i < 5; i++)
 	{
 		if (!chatqueue.empty()) {
-			cout << chatqueue.front().chat << endl;
+			char id[10];
+			sprintf(id, "[%d] : ", chatqueue.front().id);
+
+			DrawTexte(player.GetXpos() - 580, player.GetYpos() - 280 - 25 * i, id, GLUT_BITMAP_HELVETICA_18, false);
+			DrawTexte(player.GetXpos() - 520, player.GetYpos() - 280 - 25 * i, chatqueue.front().chat, GLUT_BITMAP_HELVETICA_18, false);
 			ChatData cd;
 			cd.id = chatqueue.front().id;
 			memcpy(cd.chat, chatqueue.front().chat, sizeof(chatqueue.front().chat));
@@ -254,11 +261,12 @@ void myDisplay(void)
 	//플레이어 출력
 	if (player.GetLife()) {
 		player.show();
-		ShowRank();
+		ShowDisplay();
 	}
 	else
 		ShowLose();
 
+	ShowChat();
 
 	glFlush();
 }
@@ -565,7 +573,7 @@ void processdata(char* buf) {
 		if (chatqueue.size() > 5)
 			chatqueue.pop();
 
-		ShowChat();
+		//ShowChat();
 		break;
 	}
 	case SC_LOGOUT: {
