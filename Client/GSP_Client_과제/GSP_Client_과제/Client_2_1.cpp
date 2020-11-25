@@ -255,7 +255,10 @@ void myDisplay(void)
 
 	//다른 클라이언트 업데이트
 	for (User user : users) {
+		char id[10];
+		sprintf(id, "%d", user.GetId());
 		user.show();
+		DrawTexte(user.GetXpos() - 15, user.GetYpos() - 5, id, GLUT_BITMAP_HELVETICA_18, false);
 	}
 
 	//플레이어 출력
