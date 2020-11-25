@@ -143,11 +143,6 @@ void ShowLose()
 
 void ShowDisplay()
 {
-	//show my id
-	char playerName[10];
-	sprintf(playerName, "%d", player.GetId());
-	DrawTexte(player.GetXpos() - 15, player.GetYpos()-5, playerName, GLUT_BITMAP_HELVETICA_18, false);
-
 	//sort User vector
 	for (int i = 0; i < 5; i++) {
 		//좌표 표시
@@ -267,6 +262,9 @@ void myDisplay(void)
 	//플레이어 출력
 	if (player.GetLife()) {
 		player.show();
+		char playerName[10];
+		sprintf(playerName, "%d", player.GetId());
+		DrawTexte(player.GetXpos() - 15, player.GetYpos() - 5, playerName, GLUT_BITMAP_HELVETICA_18, false);
 	}
 	else
 		ShowLose();
@@ -799,7 +797,7 @@ void Player::show() {
 
 	//맵 충돌처리
 	if (50 * MAP_SIZE < x + size) {
-		size = size / 2.f;
+		size = size * 0.7;
 		if (size < 20.f)
 			size = 20.f;
 
@@ -815,7 +813,7 @@ void Player::show() {
 		move_direction.Arrow_Right = false;
 	}
 	if (50 * MAP_SIZE < y + size) {
-		size = size / 2.f;
+		size = size * 0.7;
 		if (size < 20.f)
 			size = 20.f;
 
@@ -831,7 +829,7 @@ void Player::show() {
 		move_direction.Arrow_Up = false;
 	}
 	if (-50 * MAP_SIZE > x - size) {
-		size = size / 2.f;
+		size = size * 0.7;
 		if (size < 20.f)
 			size = 20.f;
 
@@ -847,7 +845,7 @@ void Player::show() {
 		move_direction.Arrow_Left = false;
 	}
 	else if (-50 * MAP_SIZE > y - size) {
-		size = size / 2.f;
+		size = size * 0.7;
 		if (size < 20.f)
 			size = 20.f;
 
