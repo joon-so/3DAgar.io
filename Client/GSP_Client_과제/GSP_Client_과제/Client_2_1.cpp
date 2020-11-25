@@ -184,7 +184,7 @@ void ShowChat()
 			sprintf(id, "[%d] : ", chatqueue.front().id);
 
 			DrawTexte(player.GetXpos() - 580, player.GetYpos() - 280 - 25 * i, id, GLUT_BITMAP_HELVETICA_18, false);
-			DrawTexte(player.GetXpos() - 520, player.GetYpos() - 280 - 25 * i, chatqueue.front().chat, GLUT_BITMAP_HELVETICA_18, false);
+			DrawTexte(player.GetXpos() - 520, player.GetYpos() - 280 - 25 * i, chatqueue.front().chat, GLUT_BITMAP_TIMES_ROMAN_24, false);
 			ChatData cd;
 			cd.id = chatqueue.front().id;
 			memcpy(cd.chat, chatqueue.front().chat, sizeof(chatqueue.front().chat));
@@ -261,15 +261,15 @@ void myDisplay(void)
 		DrawTexte(user.GetXpos() - 15, user.GetYpos() - 5, id, GLUT_BITMAP_HELVETICA_18, false);
 	}
 
+
+	ShowDisplay();
+	ShowChat();
 	//플레이어 출력
 	if (player.GetLife()) {
 		player.show();
-		ShowDisplay();
 	}
 	else
 		ShowLose();
-
-	ShowChat();
 
 	glFlush();
 }
@@ -689,6 +689,16 @@ void DataToServer() {
 
 int main(int argc, char** argv)
 {
+	string ip_addr;
+	cout << "	*****************\n	*****Agari.o*****\n	*****************" << endl;
+
+	cout << ">>>>\n>>>>\n	접속할 IP 주소를 입력하세요 (ex:127.0.0.1):";
+	cin >> ip_addr;
+	if (ip_addr == "0")
+		ip_addr = "127.0.0.1";
+	const char* addr = ip_addr.c_str();
+	getchar();
+
 	//오류 검사시 한국어 출력을 위함
 	wcout.imbue(std::locale("korean"));
 	WSADATA WSAData;
@@ -706,7 +716,7 @@ int main(int argc, char** argv)
 	memset(&serverAddr, 0, sizeof(SOCKADDR_IN));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_port = htons(SERVER_PORT);
-	serverAddr.sin_addr.s_addr = inet_addr(SERVER_IP);
+	serverAddr.sin_addr.s_addr = inet_addr(addr);
 	connect(serverSocket, (sockaddr*)&serverAddr, sizeof(serverAddr));
 
 	//체스판 빌드

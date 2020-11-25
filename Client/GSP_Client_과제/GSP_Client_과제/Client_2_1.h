@@ -6,8 +6,8 @@
 #include <conio.h>
 #include <WS2tcpip.h>
 #include <string>
-#include<vector>
-#include<random>
+#include <vector>
+#include <random>
 #include <algorithm>
 #include <queue>
 #pragma comment(lib, "Ws2_32.lib")
