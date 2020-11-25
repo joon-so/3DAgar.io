@@ -323,25 +323,34 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y,size);
             }
 
-
+            lock1.lock();
             //促弗 蜡历客 面倒贸府
             for (User& u : users) {
                 if ((int)client_sock != u.GetId())
                     now_user.CrushCheck(u);
             }
+            lock1.unlock();
 
+            lock2.lock();
             //冈捞客 面倒贸府
             for (int i = 0; i < FEED_MAX_NUM; i++) {
                 feed[i].CrushCheck(now_user, i);
             }
+            lock2.unlock();
+
+            lock3.lock();
             //厘局拱苞 面倒贸府
             for (int i = 0; i < ITEM_COUNT; i++) {
                 trap[i].CrushCheck(now_user, i);
             }
+            lock3.unlock();
+
+            lock4.lock();
             //酒捞袍苞 面倒贸府
             for (int i = 0; i < ITEM_COUNT; i++) {
                 item[i].CrushCheck(now_user, i);
             }
+            lock4.unlock();
 
 
             //cout << client_sock << " x = " << x << " y = " << y << endl;

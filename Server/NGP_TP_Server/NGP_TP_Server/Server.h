@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include<random>
+#include <random>
+#include <mutex>
 using namespace std;
 
 #define SERVERPORT      9000
@@ -15,6 +16,11 @@ using namespace std;
 #define FEED_MAX_NUM    500
 #define ITEM_COUNT      20
 #define MAX_CHAT_SIZE 100
+
+mutex lock1;
+mutex lock2;
+mutex lock3;
+mutex lock4;
 
 constexpr char SC_POS = 0;
 constexpr char CS_MOVE = 1;

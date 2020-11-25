@@ -316,11 +316,11 @@ DWORD WINAPI Chatting(LPVOID arg)
 			break;
 	}
 
-	cout << chat << endl;
+	//cout << chat << endl;
 	SendChatting(chat);
 	//채팅 전송
 
-	cout << "쓰레드 종료" << endl;
+	//cout << "쓰레드 종료" << endl;
 	chatfunc = false;
 	return 0;
 }
@@ -632,13 +632,13 @@ void DoTimer4RecvServer(int n) {
 		DWORD num_recv;
 		DWORD flag = 0;
 		retval = recvn(serverSocket, (char*)&len, sizeof(int), 0);
-		if (retval != -1)
-			cout << "데이터 수신	" << len << endl;
+		//if (retval != -1)
+			//cout << "데이터 수신	" << len << endl;
 		if (retval == -1)
 			break;
 		else if (WSAGetLastError() != WSAEWOULDBLOCK) {
 			retval = recvn(serverSocket, buf, len, 0);
-			cout << "Real데이터 수신	" << retval << endl;
+			//cout << "Real데이터 수신	" << retval << endl;
 			processdata(buf);
 		}
 		else break;
