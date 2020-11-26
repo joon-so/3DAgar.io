@@ -282,6 +282,7 @@ void send_chat_packet(SOCKET soc, cs_chat_packet* cp)
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
+ 
     SOCKET client_sock = (SOCKET)arg;
     int retval;
     SOCKADDR_IN clientaddr;
@@ -292,6 +293,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
     char* ptr;
 
     while (true) {
+
         //데이터 수신
         retval = recvn(client_sock, (char*)&len, sizeof(int), 0);
         retval = recvn(client_sock, buf, len, 0);
@@ -302,6 +304,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         //수신된 패킷 처리
         switch (buf[0]){
         case CS_MOVE: {
+            lock1.lock();
             User now_user;
             position_packet* mp = reinterpret_cast<position_packet*>(buf);
             int x = mp->x;
@@ -323,36 +326,36 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y,size);
             }
 
-            lock1.lock();
+            //lock1.lock();
             //다른 유저와 충돌처리
             for (User& u : users) {
                 if ((int)client_sock != u.GetId())
                     now_user.CrushCheck(u);
             }
-            lock1.unlock();
+            //lock1.unlock();
 
-            lock2.lock();
+            //lock2.lock();
             //먹이와 충돌처리
             for (int i = 0; i < FEED_MAX_NUM; i++) {
                 feed[i].CrushCheck(now_user, i);
             }
-            lock2.unlock();
+            //lock2.unlock();
 
-            lock3.lock();
+            //lock3.lock();
             //장애물과 충돌처리
             for (int i = 0; i < ITEM_COUNT; i++) {
                 trap[i].CrushCheck(now_user, i);
             }
-            lock3.unlock();
+            //lock3.unlock();
 
-            lock4.lock();
+            //lock4.lock();
             //아이템과 충돌처리
             for (int i = 0; i < ITEM_COUNT; i++) {
                 item[i].CrushCheck(now_user, i);
             }
-            lock4.unlock();
+            //lock4.unlock();
 
-
+            lock1.unlock();
             //cout << client_sock << " x = " << x << " y = " << y << endl;
             break;
         }
@@ -368,11 +371,13 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             break;
         }
         default:
+            cout << "잘못됨 시발" << endl;
             break;
            
         }
     
     }
+    cout << "잘못됨 시발1" << endl;
     //클라이언트 로그 아웃 패킷 전송
     for (User u : users) {
         if (u.GetId() != (int)client_sock)
