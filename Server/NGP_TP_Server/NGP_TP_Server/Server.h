@@ -12,7 +12,7 @@ using namespace std;
 
 #define SERVERPORT      9000
 #define MAX_BUFFER      1024
-#define MAP_SIZE	    50.f	//맵 한칸당 크기
+#define MAP_SIZE	    30.f	//맵 한칸당 크기
 #define FEED_MAX_NUM    500
 #define ITEM_COUNT      20
 #define MAX_CHAT_SIZE 100
@@ -130,19 +130,19 @@ class User {
     int id;
     short x;
     short y;
-    float size = 20.f;
+    float size = 16.f;
 
 public:
     User() {
         x = enemy_position_NUM(dre);
         y = enemy_position_NUM(dre);
-        size = 20.f;
+        size = 16.f;
         id = 0;
     }
     User(int id) :id{ id } {
         x = enemy_position_NUM(dre);
         y = enemy_position_NUM(dre);
-        //size = 20.f;
+        //size = 16.f;
     }
 
     //다른 원과의 거리 측정
@@ -213,7 +213,7 @@ public:
         // 충돌체크 후 다시 먹힐경우 다시 위치 조정
         if (MeasureDistance(user) < user.GetSize()) {
             //스레드 동기화해야함
-            user.SetSize(user.GetSize() + (size / 2));
+            user.SetSize(user.GetSize() + (size * 0.35));
             x = enemy_position_NUM(dre);
             y = enemy_position_NUM(dre);
             for (User& u : users) {
@@ -316,8 +316,8 @@ public:
             y = enemy_position_NUM(dre);
 
             user.SetSize(user.GetSize() * 0.8f);
-            if (user.GetSize() < 20.f)
-                user.SetSize(20.f);
+            if (user.GetSize() < 16.f)
+                user.SetSize(16.f);
 
             //패킷 보내기
             for (User& u : users) {

@@ -139,7 +139,6 @@ void send_all_trap_data(SOCKET soc)
 
     retval = send(soc, (char*)&atp, sizeof(sc_all_trap_packet), 0);
 
-    cout <<"전체 트랩 크기" <<sizeof(atp.traps) << endl;
 }
 
 void send_all_item_data(SOCKET soc)
@@ -157,7 +156,6 @@ void send_all_item_data(SOCKET soc)
 
     retval = send(soc, (char*)&aip, sizeof(sc_all_item_packet), 0);
 
-    cout << "전체 아이템 크기" << sizeof(aip.items) << endl;
 }
 
 void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
@@ -371,13 +369,11 @@ DWORD WINAPI ProcessClient(LPVOID arg)
             break;
         }
         default:
-            cout << "잘못됨 시발" << endl;
             break;
            
         }
     
     }
-    cout << "잘못됨 시발1" << endl;
     //클라이언트 로그 아웃 패킷 전송
     for (User u : users) {
         if (u.GetId() != (int)client_sock)

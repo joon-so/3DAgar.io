@@ -800,8 +800,8 @@ void Player::show() {
 	//¸Ê Ãæµ¹Ã³¸®
 	if (50 * MAP_SIZE < x + size) {
 		size = size * 0.7;
-		if (size < 20.f)
-			size = 20.f;
+		if (size < 16.f)
+			size = 16.f;
 
 		for (User& u : user_rank) {
 			if (player.GetId() == u.GetId()) {
@@ -816,8 +816,8 @@ void Player::show() {
 	}
 	if (50 * MAP_SIZE < y + size) {
 		size = size * 0.7;
-		if (size < 20.f)
-			size = 20.f;
+		if (size < 16.f)
+			size = 16.f;
 
 		for (User& u : user_rank) {
 			if (player.GetId() == u.GetId()) {
@@ -832,8 +832,8 @@ void Player::show() {
 	}
 	if (-50 * MAP_SIZE > x - size) {
 		size = size * 0.7;
-		if (size < 20.f)
-			size = 20.f;
+		if (size < 16.f)
+			size = 16.f;
 
 		for (User& u : user_rank) {
 			if (player.GetId() == u.GetId()) {
@@ -848,8 +848,8 @@ void Player::show() {
 	}
 	else if (-50 * MAP_SIZE > y - size) {
 		size = size * 0.7;
-		if (size < 20.f)
-			size = 20.f;
+		if (size < 16.f)
+			size = 16.f;
 
 		for (User& u : user_rank) {
 			if (player.GetId() == u.GetId()) {
@@ -1031,10 +1031,10 @@ Trap::Trap() {
 void Trap::show() {
 	glBegin(GL_POLYGON);
 	glColor3ub(0, 0, 0);
-	glVertex2i(x - 20, y - 20);
-	glVertex2i(x - 20, y + 20);
-	glVertex2i(x + 20, y + 20);
-	glVertex2i(x + 20, y - 20);
+	glVertex2i(x - 16, y - 16);
+	glVertex2i(x - 16, y + 16);
+	glVertex2i(x + 16, y + 16);
+	glVertex2i(x + 16, y - 16);
 	glEnd();
 }
 void Trap::SetXpos(short xpos) {

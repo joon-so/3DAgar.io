@@ -20,8 +20,8 @@ using namespace std;
 
 #define w_width			1200	//윈도우창 가로 크기
 #define w_height		800		//윈도우창 세로 크기
-#define MOVE_SPEED		300		//카메라 움직이는 기본 속도
-#define MAP_SIZE		50.f	//맵 한칸당 크기
+#define MOVE_SPEED		240		//카메라 움직이는 기본 속도
+#define MAP_SIZE		30.f	//맵 한칸당 크기
 #define FEED_MAX_NUM	500		//먹이 개수
 #define ITEM_COUNT		20		//아이템 개수
 #define ITEM_SPEEDUP	2		//속도 증가 아이템 계수
@@ -194,8 +194,8 @@ class Player {
 	short x;
 	short y;
 	short prev_x, prev_y;
-	float size = 20.f;
-	float prev_size = 20.f;		//크기가 변경되기 전의 원의 크기
+	float size = 16.f;
+	float prev_size = 16.f;		//크기가 변경되기 전의 원의 크기
 	Key move_direction;
 	short term = 0;
 	float item_term = SPEEDUP_TIME;
@@ -255,7 +255,7 @@ class User {
 	int id;
 	short x;
 	short y;
-	float size = 20.f;
+	float size = 16.f;
 	float color_r = uiNUM(dre) / 255.f;
 	float color_g = uiNUM(dre) / 255.f;
 	float color_b = uiNUM(dre) / 255.f;
@@ -324,9 +324,9 @@ public:
 	void show() {
 		glBegin(GL_TRIANGLES);
 		glColor3f(1.0, 1.0, 0.0);
-		glVertex2i(x - 20, y - 10);
-		glVertex2i(x + 20, y - 10);
-		glVertex2i(x, y + 23);
+		glVertex2i(x - 16, y - 8);
+		glVertex2i(x + 16, y - 8);
+		glVertex2i(x, y + 18);
 		glEnd();
 	}
 
