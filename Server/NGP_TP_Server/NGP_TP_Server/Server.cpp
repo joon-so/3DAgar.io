@@ -513,6 +513,18 @@ void User::CrushCheck(User user1)
                 send_user_logout_packet((SOCKET)u.GetId(), id);
 
             }
+            auto iter = users.begin();
+            while (iter != users.end())
+            {
+                if (iter->GetId() == id)
+                {
+                    iter = users.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
+            }
         }
     }
 
@@ -530,6 +542,18 @@ void User::CrushCheck(User user1)
                 //상대 로그아웃을 알림
                 send_user_logout_packet((SOCKET)u.GetId(), user1.GetId());
 
+            }
+            auto iter = users.begin();
+            while (iter != users.end())
+            {
+                if (iter->GetId() == user1.GetId())
+                {
+                    iter = users.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
             }
         }
     }

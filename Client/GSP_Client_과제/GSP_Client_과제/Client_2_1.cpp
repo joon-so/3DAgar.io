@@ -143,10 +143,6 @@ void ShowLose()
 
 void ShowDisplay()
 {
-	//show my id
-	char playerName[10];
-	sprintf(playerName, "%d", player.GetId());
-	DrawTexte(player.GetXpos() - 15, player.GetYpos()-5, playerName, GLUT_BITMAP_HELVETICA_18, false);
 
 	//sort User vector
 	for (int i = 0; i < 5; i++) {
@@ -267,6 +263,10 @@ void myDisplay(void)
 	//플레이어 출력
 	if (player.GetLife()) {
 		player.show();
+		//show my id
+		char playerName[10];
+		sprintf(playerName, "%d", player.GetId());
+		DrawTexte(player.GetXpos() - 15, player.GetYpos() - 5, playerName, GLUT_BITMAP_HELVETICA_18, false);
 	}
 	else
 		ShowLose();
@@ -397,6 +397,7 @@ void processdata(char* buf) {
 	switch (buf[0]) {
 		//초기 플레이어의 좌표를 받는 패킷
 	case SC_POS: {
+		cout << "초기 데이터 수신" << endl;
 		position_packet* pp = reinterpret_cast<position_packet*>(buf);
 		player.SetXpos(pp->x);
 		player.SetYpos(pp->y);
@@ -415,7 +416,7 @@ void processdata(char* buf) {
 
 		sort(user_rank.begin(), user_rank.end());
 
-		cout << "새로운 유저 추가" <<  lp->id <<" "<< lp->x << " " << lp->y <<endl;
+		cout << "새로운 유저 추가" << lp->id << " " << lp->x << " " << lp->y << endl;
 		break;
 	}
 	case SC_USER_MOVE: {
@@ -432,7 +433,7 @@ void processdata(char* buf) {
 	}
 	case SC_ALL_FEED: {
 		sc_all_feed_packet* afp = reinterpret_cast<sc_all_feed_packet*>(buf);
-		
+
 		memcpy(feed, afp->feeds, sizeof(feed));
 
 		break;
@@ -507,7 +508,7 @@ void processdata(char* buf) {
 		sort(user_rank.begin(), user_rank.end());
 		break;
 	}
-	case SC_ALL_ITEM: 
+	case SC_ALL_ITEM:
 	{
 		sc_all_item_packet* aip = reinterpret_cast<sc_all_item_packet*>(buf);
 

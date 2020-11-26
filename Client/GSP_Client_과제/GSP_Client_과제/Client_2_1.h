@@ -37,7 +37,7 @@ float lastCheckTime = 0.f;
 float currentTime = 0.f;
 bool chatfunc = false;
 
-constexpr char SC_POS = 0;
+constexpr char SC_POS = 20;
 constexpr char CS_MOVE = 1;
 
 constexpr char SC_LOGIN = 2;

@@ -22,7 +22,7 @@ mutex lock2;
 mutex lock3;
 mutex lock4;
 
-constexpr char SC_POS = 0;
+constexpr char SC_POS = 20;
 constexpr char CS_MOVE = 1;
 
 constexpr char SC_LOGIN = 2;
