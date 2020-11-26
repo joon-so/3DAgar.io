@@ -21,78 +21,55 @@ mutex lock1;
 mutex lock2;
 mutex lock3;
 mutex lock4;
+mutex lock5;
 
-constexpr char SC_POS = 20;
-constexpr char CS_MOVE = 1;
-
-constexpr char SC_LOGIN = 2;
-constexpr char SC_USER_MOVE = 3;
-
-constexpr char SC_ALL_FEED = 4;
-constexpr char SC_FEED_USER = 5;
-
-constexpr char SC_LOGOUT = 6;
-constexpr char SC_ALL_TRAP = 7;
-
-constexpr char SC_TRAP_USER = 8;
-constexpr char SC_ALL_ITEM = 9;
-
-constexpr char SC_ITEM_USER = 10;
-constexpr char SC_USER_SIZE = 11;
-
+constexpr char CS_MOVE = 11;
 constexpr char CS_CHAT = 12;
-constexpr char SC_CHAT = 13;
+
+constexpr char SC_FIRST_POS = 13;
+constexpr char SC_USER_MOVE = 14;
+constexpr char SC_USER_SIZE = 15;
+constexpr char SC_CHAT = 16;
+
+constexpr char SC_LOGIN = 17;
+constexpr char SC_LOGOUT = 18;
+
+constexpr char SC_ALL_FEED = 19;
+constexpr char SC_ALL_TRAP = 20;
+constexpr char SC_ALL_ITEM = 21;
+
+
+constexpr char SC_FEED_USER = 22;
+constexpr char SC_TRAP_USER = 23;
+constexpr char SC_ITEM_USER = 24;
+
+
 
 uniform_int_distribution<> uiNUM(50, 255);
 uniform_int_distribution<> enemy_position_NUM(-49 * MAP_SIZE, 49 * MAP_SIZE);
 default_random_engine dre{ 2016182007 };
 
-typedef struct sc_user_move_packet
+typedef struct sc_user_data_packet
 {
     char type;
     int id;
     short x;
     short y;
     float size;
-}sc_user_move_packet;
+}sc_user_data_packet;
 
-typedef struct position_packet
-{
-    char type;
-    int id;
-    short x;
-    short y;
-    float size;
-}position_packet;
 
-typedef struct sc_login_packet
-{
-    char type;
-    int id;
-    short x;
-    short y;
-    float size;
-}sc_login_packet;
 
-typedef struct sc_feedNuser_packet
+typedef struct sc_object_data_packet
 {
     char type;
     int user_id;
     float user_size;
-    int feed_index;
-    short feed_x;
-    short feed_y;
-}sc_feedNuser_packet;
+    int object_index;
+    short object_x;
+    short object_y;
+}sc_object_data_packet;
 
-typedef struct sc_trapNuser_packet
-{
-    char type;
-    int user_id;
-    float user_size;
-    int trap_index;
-    short trap_x;
-    short trap_y;
-}sc_trapNuser_packet;
 
 typedef struct sc_item_type_packet
 {
@@ -104,12 +81,14 @@ typedef struct sc_item_type_packet
     short item_y;
 }sc_item_type_packet;
 
+
 typedef struct sc_logout_packet
 {
     char type;
     int id;
 
 }sc_logout_packet;
+
 
 typedef struct sc_user_size_packet
 {
@@ -119,12 +98,14 @@ typedef struct sc_user_size_packet
 
 }sc_user_size_packet;
 
+
 typedef struct cs_chat_packet
 {
     char type;
     int id;
     char chat[MAX_CHAT_SIZE];
 }cs_chat_packet;
+
 
 class User {
     int id;
@@ -243,8 +224,6 @@ public:
         return y;
     }
 };
-
-
 
 void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy);
 
@@ -370,14 +349,24 @@ typedef struct sc_all_item_packet
     Item items[ITEM_COUNT];
 }sc_all_item_packet;
 
+typedef struct sc_feed_data_packet
+{
+    char type;
+    int user_id;
+    float user_size;
+    Feed feeds[FEED_MAX_NUM];
+
+}sc_feed_data_packet;
+
 void err_quit(const char* msg);
 void err_display(const char* msg);
 int recvn(SOCKET s, char* buf, int len, int flags);
 void send_first_pos(SOCKET soc, User user);
 void send_Login_packet(SOCKET soc, User user);
-void send_user_move_packet(SOCKET soc, int id, int x, int y);
+void send_user_move_packet(SOCKET soc, int id, int x, int y, float usize);
 void send_all_feed_data(SOCKET soc);
 void send_all_trap_data(SOCKET soc);
 void send_all_item_data(SOCKET soc);
 void send_user_logout_packet(SOCKET soc, int client);
-void send_user_size_packet(SOCKET soc, float size);
+void send_user_size_packet(SOCKET soc, int uid, float usize);
+void send_chat_packet(SOCKET soc, cs_chat_packet* cp);

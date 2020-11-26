@@ -232,8 +232,12 @@ void myDisplay(void)
 	//맵생성
 	DrawMap();
 	
-	for (int i = 0; i < FEED_MAX_NUM; i++)
+	for (int i = 0; i < FEED_MAX_NUM; i++) {
+		char id[10];
+		sprintf(id, "%d", i);
+		DrawTexte(feed[i].getXpos(), feed[i].getYpos(), id, GLUT_BITMAP_HELVETICA_18, false);
 		feed[i].show();
+	}
 
 	for (int i = 0; i < ITEM_COUNT; i++)
 		trap[i].show();
@@ -395,37 +399,37 @@ void processdata(char* buf) {
 
 	switch (buf[0]) {
 		//초기 플레이어의 좌표를 받는 패킷
-	case SC_POS: {
+	case SC_FIRST_POS: {
 		cout << "초기 데이터 수신" << endl;
-		position_packet* pp = reinterpret_cast<position_packet*>(buf);
-		player.SetXpos(pp->x);
-		player.SetYpos(pp->y);
-		player.SetId(pp->id);
+		sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
+		player.SetXpos(udp->x);
+		player.SetYpos(udp->y);
+		player.SetId(udp->id);
 
 		//랭크 벡터에 현재 플레이어 추가
-		User u(player.GetId(), player.GetXpos(), player.GetYpos(), player.GetSize());
+		User u(player.GetId(), 0, 0, player.GetSize());
 		user_rank.push_back(u);
 		break;
 	}
 	case SC_LOGIN: {
-		sc_login_packet* lp = reinterpret_cast<sc_login_packet*>(buf);
-		User u(lp->id, lp->x, lp->y, lp->size);
+		sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
+		User u(udp->id, udp->x, udp->y, udp->size);
 		users.push_back(u);
 		user_rank.push_back(u);
 
 		sort(user_rank.begin(), user_rank.end());
 
-		cout << "새로운 유저 추가" << lp->id << " " << lp->x << " " << lp->y << endl;
+		cout << "새로운 유저 접속:" << udp->id << endl;
 		break;
 	}
 	case SC_USER_MOVE: {
-		sc_user_move_packet* ump = reinterpret_cast<sc_user_move_packet*>(buf);
+		sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
 		for (User& u : users)
 		{
-			if (u.GetId() == ump->id) {
-				u.SetXpos(ump->x);
-				u.SetYpos(ump->y);
-				u.SetSize(ump->size);
+			if (u.GetId() == udp->id) {
+				u.SetXpos(udp->x);
+				u.SetYpos(udp->y);
+				u.SetSize(udp->size);
 			}
 		}
 		break;
@@ -433,37 +437,41 @@ void processdata(char* buf) {
 	case SC_ALL_FEED: {
 		sc_all_feed_packet* afp = reinterpret_cast<sc_all_feed_packet*>(buf);
 
-		memcpy(feed, afp->feeds, sizeof(feed));
-
+		memcpy(feed, afp->feeds, sizeof(afp->feeds));
+		cout << "Feed Size:" << sizeof(feed) << endl;
 		break;
 	}
 	case SC_FEED_USER:
 	{
-		sc_feedNuser_packet* afp = reinterpret_cast<sc_feedNuser_packet*>(buf);
-		if (afp->user_id == player.GetId())
+		sc_feed_data_packet* fdp = reinterpret_cast<sc_feed_data_packet*>(buf);
+		//내가 먹이를 먹고 사이즈가 커진 경우
+		if (fdp->user_id == player.GetId())
 		{
-			player.SetSize(afp->user_size);
+			player.SetSize(fdp->user_size);
+			//랭크 수정
 			for (User& u : user_rank) {
-				if (afp->user_id == u.GetId()) {
-					u.SetSize(afp->user_size);
+				if (fdp->user_id == u.GetId()) {
+					u.SetSize(fdp->user_size);
 					break;
 				}
 			}
 		}
+		//나이외의 플레이어 사이즈 수정
 		else {
 			for (User& u : users) {
-				if (afp->user_id == u.GetId())
-					u.SetSize(afp->user_size);
+				if (fdp->user_id == u.GetId())
+					u.SetSize(fdp->user_size);
 			}
+			//랭크 수정
 			for (User& u : user_rank) {
-				if (afp->user_id == u.GetId()) {
-					u.SetSize(afp->user_size);
+				if (fdp->user_id == u.GetId()) {
+					u.SetSize(fdp->user_size);
 					break;
 				}
 			}
 		}
-		feed[afp->feed_index].SetXpos(afp->feed_x);
-		feed[afp->feed_index].SetYpos(afp->feed_y);
+		memcpy(feed, fdp->feeds, sizeof(fdp->feeds));
+
 		sort(user_rank.begin(), user_rank.end());
 
 		break;
@@ -471,38 +479,38 @@ void processdata(char* buf) {
 	case SC_ALL_TRAP: {
 		sc_all_trap_packet* atp = reinterpret_cast<sc_all_trap_packet*>(buf);
 
-		memcpy(trap, atp->traps, sizeof(trap));
+		memcpy(trap, atp->traps, sizeof(atp->traps));
 
 		cout << "전체 트랩 데이터 수신 완료" << endl;
 		break;
 	}
 	case SC_TRAP_USER:
 	{
-		sc_trapNuser_packet* tup = reinterpret_cast<sc_trapNuser_packet*>(buf);
-		if (tup->user_id == player.GetId())
+		sc_object_data_packet* odp = reinterpret_cast<sc_object_data_packet*>(buf);
+		if (odp->user_id == player.GetId())
 		{
-			player.SetSize(tup->user_size);
+			player.SetSize(odp->user_size);
 			for (User& u : user_rank) {
-				if (tup->user_id == u.GetId()) {
-					u.SetSize(tup->user_size);
+				if (odp->user_id == u.GetId()) {
+					u.SetSize(odp->user_size);
 					break;
 				}
 			}
 		}
 		else {
 			for (User& u : users) {
-				if (tup->user_id == u.GetId())
-					u.SetSize(tup->user_size);
+				if (odp->user_id == u.GetId())
+					u.SetSize(odp->user_size);
 			}
 			for (User& u : user_rank) {
-				if (tup->user_id == u.GetId()) {
-					u.SetSize(tup->user_size);
+				if (odp->user_id == u.GetId()) {
+					u.SetSize(odp->user_size);
 					break;
 				}
 			}
 		}
-		trap[tup->trap_index].SetXpos(tup->trap_x);
-		trap[tup->trap_index].SetYpos(tup->trap_y);
+		trap[odp->object_index].SetXpos(odp->object_x);
+		trap[odp->object_index].SetYpos(odp->object_y);
 
 		sort(user_rank.begin(), user_rank.end());
 		break;
@@ -511,7 +519,7 @@ void processdata(char* buf) {
 	{
 		sc_all_item_packet* aip = reinterpret_cast<sc_all_item_packet*>(buf);
 
-		memcpy(item, aip->items, sizeof(item));
+		memcpy(item, aip->items, sizeof(aip->items));
 		cout << "전체 아이템 데이터 수신 완료" << endl;
 		break;
 	}
@@ -672,19 +680,19 @@ void BuildBoard(int argc, char** argv)
 
 //패킷 전송
 void DataToServer() {
-	position_packet mp;
+	sc_user_data_packet udp;
 	char buf[MAX_BUFFER];
 	int retval;
 
-	mp.type = CS_MOVE;
-	mp.x = player.GetXpos();
-	mp.y = player.GetYpos();
-	mp.size = player.GetSize();
-	int size = sizeof(position_packet);
+	udp.type = CS_MOVE;
+	udp.x = player.GetXpos();
+	udp.y = player.GetYpos();
+	udp.size = player.GetSize();
+	int size = sizeof(sc_user_data_packet);
 
 	retval = send(serverSocket, (char*)&size, sizeof(int), 0);
 
-	retval = send(serverSocket, (char*)&mp, sizeof(position_packet), 0);
+	retval = send(serverSocket, (char*)&udp, sizeof(sc_user_data_packet), 0);
 }
 
 int main(int argc, char** argv)
@@ -998,10 +1006,7 @@ int User::GetId() const {
 	return id;
 }
 
-Feed::Feed() {
-	x = enemy_position_NUM(dre);
-	y = enemy_position_NUM(dre);
-}
+
 void Feed::show() {
 	glBegin(GL_POLYGON);
 	float color_r = uiNUM(dre) / 255.f;
@@ -1022,6 +1027,16 @@ void Feed::SetXpos(short xpos) {
 }
 void Feed::SetYpos(short ypos) {
 	y = ypos;
+}
+
+short Feed::getXpos()
+{
+	return x;
+}
+
+short Feed::getYpos()
+{
+	return y;
 }
 
 Trap::Trap() {

@@ -37,26 +37,25 @@ float lastCheckTime = 0.f;
 float currentTime = 0.f;
 bool chatfunc = false;
 
-constexpr char SC_POS = 20;
-constexpr char CS_MOVE = 1;
-
-constexpr char SC_LOGIN = 2;
-constexpr char SC_USER_MOVE = 3;
-
-constexpr char SC_ALL_FEED = 4;
-constexpr char SC_FEED_USER = 5;
-
-constexpr char SC_LOGOUT = 6;
-constexpr char SC_ALL_TRAP = 7;
-
-constexpr char SC_TRAP_USER = 8;
-constexpr char SC_ALL_ITEM = 9;
-
-constexpr char SC_ITEM_USER = 10;
-constexpr char SC_USER_SIZE = 11;
-
+constexpr char CS_MOVE = 11;
 constexpr char CS_CHAT = 12;
-constexpr char SC_CHAT = 13;
+
+constexpr char SC_FIRST_POS = 13;
+constexpr char SC_USER_MOVE = 14;
+constexpr char SC_USER_SIZE = 15;
+constexpr char SC_CHAT = 16;
+
+constexpr char SC_LOGIN = 17;
+constexpr char SC_LOGOUT = 18;
+
+constexpr char SC_ALL_FEED = 19;
+constexpr char SC_ALL_TRAP = 20;
+constexpr char SC_ALL_ITEM = 21;
+
+
+constexpr char SC_FEED_USER = 22;
+constexpr char SC_TRAP_USER = 23;
+constexpr char SC_ITEM_USER = 24;
 
 enum KeyInput
 {
@@ -96,52 +95,27 @@ void DrawMap();
 void ShowLose();
 int recvn(SOCKET s, char* buf, int len, int flags);
 
-typedef struct sc_user_move_packet
+typedef struct sc_user_data_packet
 {
 	char type;
 	int id;
 	short x;
 	short y;
 	float size;
-}sc_user_move_packet;
+}sc_user_data_packet;
 
-typedef struct position_packet
-{
-	char type;
-	int id;
-	short x;
-	short y;
-	float size;
-}position_packet;
 
-typedef struct sc_login_packet
-{
-	char type;
-	int id;
-	short x;
-	short y;
-	float size;
-}sc_login_packet;
 
-typedef struct sc_feedNuser_packet
+typedef struct sc_object_data_packet
 {
 	char type;
 	int user_id;
 	float user_size;
-	int feed_index;
-	short feed_x;
-	short feed_y;
-}sc_feedNuser_packet;
+	int object_index;
+	short object_x;
+	short object_y;
+}sc_object_data_packet;
 
-typedef struct sc_trapNuser_packet
-{
-	char type;
-	int user_id;
-	float user_size;
-	int trap_index;
-	short trap_x;
-	short trap_y;
-}sc_trapNuser_packet;
 
 typedef struct sc_item_type_packet
 {
@@ -152,6 +126,7 @@ typedef struct sc_item_type_packet
 	short item_x;
 	short item_y;
 }sc_item_type_packet;
+
 
 typedef struct sc_logout_packet
 {
@@ -296,7 +271,7 @@ class Feed {
 	float size = 5.f;
 
 public:
-	Feed();
+	Feed(){};
 	//서버에서 상대방 받아올때 사용
 	Feed(short x, short y) : x{ x }, y{ y } {}
 
@@ -305,6 +280,9 @@ public:
 	void SetXpos(short xpos);
 	//y좌표 설정
 	void SetYpos(short ypos);
+
+	short getXpos();
+	short getYpos();
 };
 
 class Item {
@@ -396,3 +374,12 @@ typedef struct sc_all_item_packet
 	char type;
 	Item items[ITEM_COUNT];
 }sc_all_item_packet;
+
+typedef struct sc_feed_data_packet
+{
+	char type;
+	int user_id;
+	float user_size;
+	Feed feeds[FEED_MAX_NUM];
+
+}sc_feed_data_packet;

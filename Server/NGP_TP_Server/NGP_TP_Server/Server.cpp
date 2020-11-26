@@ -49,153 +49,125 @@ int recvn(SOCKET s, char* buf, int len, int flags)
     return (len - left);
 }
 
+void send_packet(SOCKET soc, void* packet, int packet_size)
+{
+
+    char* p = reinterpret_cast<char*>(packet);
+
+    int retval;
+    retval = send(soc, (char*)&packet_size, sizeof(int), 0);
+
+    retval = send(soc, p, packet_size, 0);
+}
+
 void send_first_pos(SOCKET soc, User user)
 {
-    position_packet mp;
+    sc_user_data_packet udp;
     char buf[MAX_BUFFER];
-    int retval;
 
-    mp.type = SC_POS;
-    mp.x = user.GetXpos();
-    mp.y = user.GetYpos();
-    mp.id = user.GetId();
+
+    udp.type = SC_FIRST_POS;
+    udp.x = user.GetXpos();
+    udp.y = user.GetYpos();
+    udp.id = user.GetId();
     
-    int size = sizeof(position_packet);
+    send_packet(soc, reinterpret_cast<void*>(&udp), sizeof(udp));
 
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&mp, sizeof(position_packet), 0);
-
-    cout << "send_first_pos : " << mp.x << " " << mp.y << " " << "(" << retval << " bytes)\n";
 }
 
 void send_Login_packet(SOCKET soc, User user)
 {
-    sc_login_packet lp;
+    sc_user_data_packet udp;
     char buf[MAX_BUFFER];
-    int retval;
 
-    lp.type = SC_LOGIN;
-    lp.id = user.GetId();
-    lp.x = user.GetXpos();
-    lp.y = user.GetYpos();
-    lp.size = user.GetSize();
+    udp.type = SC_LOGIN;
+    udp.id = user.GetId();
+    udp.x = user.GetXpos();
+    udp.y = user.GetYpos();
+    udp.size = user.GetSize();
 
-    int size = sizeof(sc_login_packet);
+    send_packet(soc, reinterpret_cast<void*>(&udp), sizeof(udp));
 
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&lp, sizeof(sc_login_packet), 0);
-
-    cout << "send_Login_packet : 전송대상"<< soc <<" "<< lp.id <<" " << lp.x << " " << lp.y << " " << "(" << retval << " bytes)\n";
 }
 
 void send_user_move_packet(SOCKET soc, int id, int x, int y, float usize)
 {
-    sc_user_move_packet ump;
+    sc_user_data_packet udp;
     char buf[MAX_BUFFER];
-    int retval;
 
-    ump.type = SC_USER_MOVE;
-    ump.id = id;
-    ump.x = x;
-    ump.y = y;
-    ump.size = usize;
-    int size = sizeof(sc_user_move_packet);
 
-    retval = send(soc, (char*)&size, sizeof(int), 0);
+    udp.type = SC_USER_MOVE;
+    udp.id = id;
+    udp.x = x;
+    udp.y = y;
+    udp.size = usize;
 
-    retval = send(soc, (char*)&ump, sizeof(sc_user_move_packet), 0);
+    send_packet(soc, reinterpret_cast<void*>(&udp), sizeof(udp));
 }
 
 void send_all_feed_data(SOCKET soc)
 {
     sc_all_feed_packet afp;
     char buf[MAX_BUFFER];
-    int retval;
 
     afp.type = SC_ALL_FEED;
     memcpy(afp.feeds, feed, sizeof(feed));
 
-    int size = sizeof(sc_all_feed_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&afp, sizeof(sc_all_feed_packet), 0);
+    send_packet(soc, reinterpret_cast<void*>(&afp), sizeof(afp));
 }
 
 void send_all_trap_data(SOCKET soc)
 {
     sc_all_trap_packet atp;
     char buf[MAX_BUFFER];
-    int retval;
 
     atp.type = SC_ALL_TRAP;
     memcpy(atp.traps, trap, sizeof(trap));
 
-    int size = sizeof(sc_all_trap_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&atp, sizeof(sc_all_trap_packet), 0);
-
+    send_packet(soc, reinterpret_cast<void*>(&atp), sizeof(atp));
 }
 
 void send_all_item_data(SOCKET soc)
 {
     sc_all_item_packet aip;
     char buf[MAX_BUFFER];
-    int retval;
 
     aip.type = SC_ALL_ITEM;
     memcpy(aip.items, item, sizeof(item));
 
-    int size = sizeof(sc_all_item_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&aip, sizeof(sc_all_item_packet), 0);
+    send_packet(soc, reinterpret_cast<void*>(&aip), sizeof(aip));
 
 }
 
 void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
 {
-    sc_feedNuser_packet fup;
+    sc_feed_data_packet fdp;
     char buf[MAX_BUFFER];
-    int retval;
 
-    fup.type = SC_FEED_USER;
-    fup.user_id = uid;
-    fup.user_size = usize;
-    fup.feed_index = fi;
-    fup.feed_x = fx;
-    fup.feed_y = fy;
+    fdp.type = SC_FEED_USER;
+    fdp.user_id = uid;
+    fdp.user_size = usize;
+    memcpy(fdp.feeds, feed, sizeof(feed));
 
-    int size = sizeof(sc_feedNuser_packet);
+    int size = sizeof(sc_feed_data_packet);
 
-    retval = send(soc, (char*)&size, sizeof(int), 0);
+    send_packet(soc, reinterpret_cast<void*>(&fdp), sizeof(fdp));
 
-    retval = send(soc, (char*)&fup, sizeof(sc_feedNuser_packet), 0);
 }
 
 void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty)
 {
-    sc_trapNuser_packet tup;
+    sc_object_data_packet odp;
     char buf[MAX_BUFFER];
-    int retval;
 
-    tup.type = SC_TRAP_USER;
-    tup.user_id = uid;
-    tup.user_size = usize;
-    tup.trap_index = ti;
-    tup.trap_x = tx;
-    tup.trap_y = ty;
+    odp.type = SC_TRAP_USER;
+    odp.user_id = uid;
+    odp.user_size = usize;
+    odp.object_index = ti;
+    odp.object_x = tx;
+    odp.object_y = ty;
 
-    int size = sizeof(sc_trapNuser_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&tup, sizeof(sc_trapNuser_packet), 0);
+    send_packet(soc, reinterpret_cast<void*>(&odp), sizeof(odp));
 
 }
 
@@ -203,7 +175,7 @@ void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy)
 {
     sc_item_type_packet itp;
     char buf[MAX_BUFFER];
-    int retval;
+
 
     itp.type = SC_ITEM_USER;
     itp.user_id = uid;
@@ -212,11 +184,7 @@ void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy)
     itp.item_x = ix;
     itp.item_y = iy;
 
-    int size = sizeof(sc_item_type_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&itp, sizeof(sc_item_type_packet), 0);
+    send_packet(soc, reinterpret_cast<void*>(&itp), sizeof(itp));
 
 }
 
@@ -224,56 +192,37 @@ void send_user_logout_packet(SOCKET soc, int client)
 {
     sc_logout_packet lop;
     char buf[MAX_BUFFER];
-    int retval;
 
     lop.type = SC_LOGOUT;
     lop.id = client;
 
-
-    int size = sizeof(sc_logout_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&lop, sizeof(sc_logout_packet), 0);
-
-    cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
+    send_packet(soc, reinterpret_cast<void*>(&lop), sizeof(lop));
+    cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id <<endl;
 }
 
 void send_user_size_packet(SOCKET soc, int uid, float usize)
 {
     sc_user_size_packet usp;
     char buf[MAX_BUFFER];
-    int retval;
 
     usp.type = SC_USER_SIZE;
     usp.id = uid;
     usp.size = usize;
 
+    send_packet(soc, reinterpret_cast<void*>(&usp), sizeof(usp));
 
-    int size = sizeof(sc_user_size_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&usp, sizeof(sc_user_size_packet), 0);
-
-    //cout << "send_Logout_packet : 전송대상" << soc << " " << lop.id << "(" << retval << " bytes)\n";
 }
 
 void send_chat_packet(SOCKET soc, cs_chat_packet* cp)
 {
     cs_chat_packet scp;
     char buf[MAX_BUFFER];
-    int retval;
 
     scp.type = SC_CHAT;
     scp.id = cp->id;
     memcpy(scp.chat, cp->chat, sizeof(cp->chat));
 
-    int size = sizeof(cs_chat_packet);
-
-    retval = send(soc, (char*)&size, sizeof(int), 0);
-
-    retval = send(soc, (char*)&scp, sizeof(cs_chat_packet), 0);
+    send_packet(soc, reinterpret_cast<void*>(&scp), sizeof(scp));
 }
 
 
@@ -304,18 +253,18 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         case CS_MOVE: {
             lock1.lock();
             User now_user;
-            position_packet* mp = reinterpret_cast<position_packet*>(buf);
-            int x = mp->x;
-            int y = mp->y;
-            float size = mp->size;
+            sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
+            int x = udp->x;
+            int y = udp->y;
+            float size = udp->size;
             //현재 클라이언트의 좌표를 나머지 유저들에게 전송
             for (User &u : users)
             {
                 //해당 클라이언트에게 전송 받았을 경우
                 if ((int)client_sock == u.GetId()) {
-                    u.SetXpos(mp->x);
-                    u.SetYpos(mp->y);
-                    u.SetSize(mp->size);
+                    u.SetXpos(udp->x);
+                    u.SetYpos(udp->y);
+                    u.SetSize(udp->size);
                     now_user.SetSize(u.GetSize());
                     now_user = u;
                 }
@@ -360,17 +309,14 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         case CS_CHAT:
         {
             cs_chat_packet* cp = reinterpret_cast<cs_chat_packet*>(buf);
-            
             for (User& u : users) {
                 send_chat_packet((SOCKET)u.GetId(), cp);
             }
-
             cout << "Chatting<" << cp->id << ">: " << cp->chat<< " " <<  sizeof(cp->chat)<< endl;
             break;
         }
         default:
             break;
-           
         }
     
     }
@@ -400,8 +346,6 @@ DWORD WINAPI ProcessClient(LPVOID arg)
 
 int main()
 {
-    int retval;
-
     // 윈속 초기화
     WSADATA wsa;
     if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
@@ -423,6 +367,7 @@ int main()
     serveraddr.sin_family = AF_INET;
     serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
     serveraddr.sin_port = htons(SERVERPORT);
+    int retval;
     retval = bind(listen_sock, (SOCKADDR*)&serveraddr, sizeof(serveraddr));
     if (retval == SOCKET_ERROR) err_quit("bind()");
 
@@ -534,7 +479,7 @@ void User::CrushCheck(User user1)
         if (MeasureDistance(user1) < size) {
             float newsize = size + user1.GetSize() * 0.3f;
             size = newsize;
-            cout << "플레이어 충돌처리" << endl;
+            //cout << "플레이어 충돌처리" << endl;
             //상대가 죽고 나는 커지고
             for (User u : users)
             {
