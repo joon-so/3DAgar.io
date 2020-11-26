@@ -36,6 +36,8 @@ float deltaTime = 0.f;
 float lastCheckTime = 0.f;
 float currentTime = 0.f;
 bool chatfunc = false;
+bool name_change = false;
+
 
 constexpr char CS_MOVE = 11;
 constexpr char CS_CHAT = 12;

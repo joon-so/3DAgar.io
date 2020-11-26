@@ -233,9 +233,6 @@ void myDisplay(void)
 	DrawMap();
 	
 	for (int i = 0; i < FEED_MAX_NUM; i++) {
-		char id[10];
-		sprintf(id, "%d", i);
-		DrawTexte(feed[i].getXpos(), feed[i].getYpos(), id, GLUT_BITMAP_HELVETICA_18, false);
 		feed[i].show();
 	}
 
@@ -400,15 +397,18 @@ void processdata(char* buf) {
 	switch (buf[0]) {
 		//초기 플레이어의 좌표를 받는 패킷
 	case SC_FIRST_POS: {
-		cout << "초기 데이터 수신" << endl;
-		sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
-		player.SetXpos(udp->x);
-		player.SetYpos(udp->y);
-		player.SetId(udp->id);
+		if (!name_change) {
+			cout << "초기 데이터 수신" << endl;
+			sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
+			player.SetXpos(udp->x);
+			player.SetYpos(udp->y);
+			player.SetId(udp->id);
+			name_change = true;
 
-		//랭크 벡터에 현재 플레이어 추가
-		User u(player.GetId(), 0, 0, player.GetSize());
-		user_rank.push_back(u);
+			//랭크 벡터에 현재 플레이어 추가
+			User u(player.GetId(), 0, 0, player.GetSize());
+			user_rank.push_back(u);
+		}
 		break;
 	}
 	case SC_LOGIN: {
