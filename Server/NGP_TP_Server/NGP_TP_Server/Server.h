@@ -7,7 +7,6 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include <mutex>
 using namespace std;
 
 #define SERVERPORT      9000
@@ -17,11 +16,12 @@ using namespace std;
 #define ITEM_COUNT      20
 #define MAX_CHAT_SIZE 100
 
-mutex lock1;
-mutex lock2;
-mutex lock3;
-mutex lock4;
-mutex lock5;
+CRITICAL_SECTION ac_move;
+CRITICAL_SECTION ac_user;
+CRITICAL_SECTION ac_feed;
+CRITICAL_SECTION ac_item;
+CRITICAL_SECTION ac_trap;
+
 
 constexpr char CS_MOVE = 11;
 constexpr char CS_CHAT = 12;

@@ -631,18 +631,18 @@ void DoTimer4RecvServer(int n) {
 	int retval;
 
 	char buf[MAX_BUFFER];
-	int len;
+	int lens;
 
 	while (true) {
 		DWORD num_recv;
 		DWORD flag = 0;
-		retval = recvn(serverSocket, (char*)&len, sizeof(int), 0);
+		retval = recvn(serverSocket, (char*)&lens, sizeof(int), 0);
 		//if (retval != -1)
 			//cout << "데이터 수신	" << len << endl;
-		if (retval == -1)
+		if (retval == -1 || retval == 0)
 			break;
 		else if (WSAGetLastError() != WSAEWOULDBLOCK) {
-			retval = recvn(serverSocket, buf, len, 0);
+			retval = recvn(serverSocket, buf, lens, 0);
 			//cout << "Real데이터 수신	" << retval << endl;
 			processdata(buf);
 		}

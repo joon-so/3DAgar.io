@@ -247,7 +247,7 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         //수신된 패킷 처리
         switch (buf[0]){
         case CS_MOVE: {
-            lock1.lock();
+            EnterCriticalSection(&ac_move);
             User now_user;
             sc_user_data_packet* udp = reinterpret_cast<sc_user_data_packet*>(buf);
             int x = udp->x;
@@ -268,36 +268,36 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                 if((int)client_sock != u.GetId())
                     send_user_move_packet((SOCKET)u.GetId(),int(client_sock),x,y,size);
             }
-            lock1.unlock();
+            LeaveCriticalSection(&ac_move);
 
-            lock2.lock();
+            EnterCriticalSection(&ac_user);
             //다른 유저와 충돌처리
             for (User& u : users) {
                 if ((int)client_sock != u.GetId())
                     now_user.CrushCheck(u);
             }
-            lock2.unlock();
+            LeaveCriticalSection(&ac_user);
 
-            lock3.lock();
+            EnterCriticalSection(&ac_feed);
             //먹이와 충돌처리
             for (int i = 0; i < FEED_MAX_NUM; i++) {
                 feed[i].CrushCheck(now_user, i);
             }
-            lock3.unlock();
+            LeaveCriticalSection(&ac_feed);
 
-            lock4.lock();
+            EnterCriticalSection(&ac_trap);
             //장애물과 충돌처리
             for (int i = 0; i < ITEM_COUNT; i++) {
                 trap[i].CrushCheck(now_user, i);
             }
-            lock4.unlock();
+            LeaveCriticalSection(&ac_trap);
 
-            lock5.lock();
+            EnterCriticalSection(&ac_item);
             //아이템과 충돌처리
             for (int i = 0; i < ITEM_COUNT; i++) {
                 item[i].CrushCheck(now_user, i);
             }
-            lock5.unlock();
+            LeaveCriticalSection(&ac_item);
 
             //cout << client_sock << " x = " << x << " y = " << y << endl;
             break;
@@ -355,8 +355,8 @@ int main()
     // socket()
     SOCKET listen_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (listen_sock == INVALID_SOCKET) err_quit("socket()");
-    //BOOL optval = TRUE;
-    //setsockopt(listen_sock, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, sizeof(optval));
+    BOOL optval = TRUE;
+    setsockopt(listen_sock, IPPROTO_TCP, TCP_NODELAY, (char*)&optval, sizeof(optval));
     // bind()
     SOCKADDR_IN serveraddr;
     ZeroMemory(&serveraddr, sizeof(serveraddr));
@@ -370,6 +370,12 @@ int main()
     // listen()
     retval = listen(listen_sock, SOMAXCONN);
     if (retval == SOCKET_ERROR) err_quit("listen()");
+
+    InitializeCriticalSection(&ac_move);
+    InitializeCriticalSection(&ac_user);
+    InitializeCriticalSection(&ac_feed);
+    InitializeCriticalSection(&ac_item);
+    InitializeCriticalSection(&ac_trap);
 
     // 데이터 통신에 사용할 변수
     SOCKET client_sock;
@@ -430,6 +436,11 @@ int main()
             CloseHandle(hThread);
         }
     }
+    DeleteCriticalSection(&ac_move);
+    DeleteCriticalSection(&ac_user);
+    DeleteCriticalSection(&ac_feed);
+    DeleteCriticalSection(&ac_item);
+    DeleteCriticalSection(&ac_trap);
     // closesocket()
     closesocket(listen_sock);
 
