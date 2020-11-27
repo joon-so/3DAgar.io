@@ -106,30 +106,6 @@ typedef struct sc_user_data_packet
 	float size;
 }sc_user_data_packet;
 
-
-
-typedef struct sc_object_data_packet
-{
-	char type;
-	int user_id;
-	float user_size;
-	int object_index;
-	short object_x;
-	short object_y;
-}sc_object_data_packet;
-
-
-typedef struct sc_item_type_packet
-{
-	char type;
-	int user_id;
-	short item_type;
-	int item_index;
-	short item_x;
-	short item_y;
-}sc_item_type_packet;
-
-
 typedef struct sc_logout_packet
 {
 	char type;
@@ -273,7 +249,10 @@ class Feed {
 	float size = 5.f;
 
 public:
-	Feed(){};
+	Feed(){
+		x = -10000;
+		y = -10000;
+	};
 	//서버에서 상대방 받아올때 사용
 	Feed(short x, short y) : x{ x }, y{ y } {}
 
@@ -294,8 +273,8 @@ class Item {
 
 public:
 	Item() {
-		x = enemy_position_NUM(dre);
-		y = enemy_position_NUM(dre);
+		x = -10000;
+		y = -10000;
 	}
 	//서버로부터 좌표와 타입을 받아옴
 	Item(int x, int y, bool type) : x{ x }, y{ y }, type{ type } {}
@@ -385,3 +364,19 @@ typedef struct sc_feed_data_packet
 	Feed feeds[FEED_MAX_NUM];
 
 }sc_feed_data_packet;
+
+typedef struct sc_trap_data_packet
+{
+	char type;
+	int user_id;
+	float user_size;
+	Trap traps[ITEM_COUNT];
+}sc_trap_data_packet;
+
+typedef struct sc_item_type_packet
+{
+	char type;
+	int user_id;
+	short item_type;
+	Item items[ITEM_COUNT];
+}sc_item_type_packet;

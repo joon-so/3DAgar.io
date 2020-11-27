@@ -157,17 +157,15 @@ void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short
 
 void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty)
 {
-    sc_object_data_packet odp;
+    sc_trap_data_packet tdp;
     char buf[MAX_BUFFER];
 
-    odp.type = SC_TRAP_USER;
-    odp.user_id = uid;
-    odp.user_size = usize;
-    odp.object_index = ti;
-    odp.object_x = tx;
-    odp.object_y = ty;
+    tdp.type = SC_TRAP_USER;
+    tdp.user_id = uid;
+    tdp.user_size = usize;
+    memcpy(tdp.traps, trap, sizeof(trap));
 
-    send_packet(soc, reinterpret_cast<void*>(&odp), sizeof(odp));
+    send_packet(soc, reinterpret_cast<void*>(&tdp), sizeof(tdp));
 
 }
 
@@ -180,9 +178,7 @@ void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy)
     itp.type = SC_ITEM_USER;
     itp.user_id = uid;
     itp.item_type = type;
-    itp.item_index = ii;
-    itp.item_x = ix;
-    itp.item_y = iy;
+    memcpy(itp.items, item, sizeof(item));
 
     send_packet(soc, reinterpret_cast<void*>(&itp), sizeof(itp));
 

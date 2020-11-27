@@ -486,31 +486,30 @@ void processdata(char* buf) {
 	}
 	case SC_TRAP_USER:
 	{
-		sc_object_data_packet* odp = reinterpret_cast<sc_object_data_packet*>(buf);
-		if (odp->user_id == player.GetId())
+		sc_trap_data_packet* tdp = reinterpret_cast<sc_trap_data_packet*>(buf);
+		if (tdp->user_id == player.GetId())
 		{
-			player.SetSize(odp->user_size);
+			player.SetSize(tdp->user_size);
 			for (User& u : user_rank) {
-				if (odp->user_id == u.GetId()) {
-					u.SetSize(odp->user_size);
+				if (tdp->user_id == u.GetId()) {
+					u.SetSize(tdp->user_size);
 					break;
 				}
 			}
 		}
 		else {
 			for (User& u : users) {
-				if (odp->user_id == u.GetId())
-					u.SetSize(odp->user_size);
+				if (tdp->user_id == u.GetId())
+					u.SetSize(tdp->user_size);
 			}
 			for (User& u : user_rank) {
-				if (odp->user_id == u.GetId()) {
-					u.SetSize(odp->user_size);
+				if (tdp->user_id == u.GetId()) {
+					u.SetSize(tdp->user_size);
 					break;
 				}
 			}
 		}
-		trap[odp->object_index].SetXpos(odp->object_x);
-		trap[odp->object_index].SetYpos(odp->object_y);
+		memcpy(trap, tdp->traps, sizeof(tdp->traps));
 
 		sort(user_rank.begin(), user_rank.end());
 		break;
@@ -534,9 +533,7 @@ void processdata(char* buf) {
 			if (player.GetItem() == 0)
 				player.SetItem(-1);
 		}
-
-		item[itp->item_index].SetXpos(itp->item_x);
-		item[itp->item_index].SetYpos(itp->item_y);
+		memcpy(item, itp->items, sizeof(itp->items));
 
 		break;
 	}
@@ -1040,8 +1037,8 @@ short Feed::getYpos()
 }
 
 Trap::Trap() {
-	x = enemy_position_NUM(dre);
-	y = enemy_position_NUM(dre);
+	x = -10000;
+	y = -10000;
 }
 void Trap::show() {
 	glBegin(GL_POLYGON);

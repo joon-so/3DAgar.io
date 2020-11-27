@@ -58,30 +58,6 @@ typedef struct sc_user_data_packet
     float size;
 }sc_user_data_packet;
 
-
-
-typedef struct sc_object_data_packet
-{
-    char type;
-    int user_id;
-    float user_size;
-    int object_index;
-    short object_x;
-    short object_y;
-}sc_object_data_packet;
-
-
-typedef struct sc_item_type_packet
-{
-    char type;
-    int user_id;
-    short item_type;
-    int item_index;
-    short item_x;
-    short item_y;
-}sc_item_type_packet;
-
-
 typedef struct sc_logout_packet
 {
     char type;
@@ -357,6 +333,22 @@ typedef struct sc_feed_data_packet
     Feed feeds[FEED_MAX_NUM];
 
 }sc_feed_data_packet;
+
+typedef struct sc_trap_data_packet
+{
+    char type;
+    int user_id;
+    float user_size;
+    Trap traps[ITEM_COUNT];
+}sc_trap_data_packet;
+
+typedef struct sc_item_type_packet
+{
+    char type;
+    int user_id;
+    short item_type;
+    Item items[ITEM_COUNT];
+}sc_item_type_packet;
 
 void err_quit(const char* msg);
 void err_display(const char* msg);
