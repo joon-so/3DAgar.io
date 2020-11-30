@@ -787,12 +787,12 @@ void Player::show() {
 	else {
 		item_term -= deltaTime;
 		if (shake == false) {
-			x += MOVE_SPEED / 100;
+			x += MOVE_SPEED / 167;
 			DataToServer();
 			shake = true;
 		}
 		else {
-			x -= MOVE_SPEED / 100;
+			x -= MOVE_SPEED / 167;
 			DataToServer();
 			shake = false;
 		}
@@ -1013,8 +1013,8 @@ void Feed::show() {
 	for (int i = 0; i < 360; i++)
 	{
 		float angle = i * 3.141592 / 180;
-		float ax = size * cos(angle);
-		float ay = size * sin(angle);
+		float ax = 5.f * cos(angle);
+		float ay = 5.f * sin(angle);
 		glVertex2f(x + ax, y + ay);
 	}
 	glEnd();
