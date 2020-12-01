@@ -63,8 +63,6 @@ void send_packet(SOCKET soc, void* packet, int packet_size)
 void send_first_pos(SOCKET soc, User user)
 {
     sc_user_data_packet udp;
-    char buf[MAX_BUFFER];
-
 
     udp.type = SC_FIRST_POS;
     udp.x = user.GetXpos();
@@ -72,13 +70,11 @@ void send_first_pos(SOCKET soc, User user)
     udp.id = user.GetId();
     
     send_packet(soc, reinterpret_cast<void*>(&udp), sizeof(udp));
-
 }
 
 void send_Login_packet(SOCKET soc, User user)
 {
     sc_user_data_packet udp;
-    char buf[MAX_BUFFER];
 
     udp.type = SC_LOGIN;
     udp.id = user.GetId();
@@ -87,15 +83,12 @@ void send_Login_packet(SOCKET soc, User user)
     udp.size = user.GetSize();
 
     send_packet(soc, reinterpret_cast<void*>(&udp), sizeof(udp));
-
 }
 
 void send_user_move_packet(SOCKET soc, int id, int x, int y, float usize)
 {
     sc_user_data_packet udp;
-    char buf[MAX_BUFFER];
-
-
+ 
     udp.type = SC_USER_MOVE;
     udp.id = id;
     udp.x = x;
@@ -108,7 +101,6 @@ void send_user_move_packet(SOCKET soc, int id, int x, int y, float usize)
 void send_all_feed_data(SOCKET soc)
 {
     sc_all_feed_packet afp;
-    char buf[MAX_BUFFER];
 
     afp.type = SC_ALL_FEED;
     memcpy(afp.feeds, feed, sizeof(feed));
@@ -119,7 +111,6 @@ void send_all_feed_data(SOCKET soc)
 void send_all_trap_data(SOCKET soc)
 {
     sc_all_trap_packet atp;
-    char buf[MAX_BUFFER];
 
     atp.type = SC_ALL_TRAP;
     memcpy(atp.traps, trap, sizeof(trap));
@@ -130,7 +121,6 @@ void send_all_trap_data(SOCKET soc)
 void send_all_item_data(SOCKET soc)
 {
     sc_all_item_packet aip;
-    char buf[MAX_BUFFER];
 
     aip.type = SC_ALL_ITEM;
     memcpy(aip.items, item, sizeof(item));
@@ -142,7 +132,6 @@ void send_all_item_data(SOCKET soc)
 void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short fx, short fy)
 {
     sc_feed_data_packet fdp;
-    char buf[MAX_BUFFER];
 
     fdp.type = SC_FEED_USER;
     fdp.user_id = uid;
@@ -158,7 +147,6 @@ void send_feedposi_usersize_data(SOCKET soc, int uid, float usize, int fi, short
 void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short tx, short ty)
 {
     sc_trap_data_packet tdp;
-    char buf[MAX_BUFFER];
 
     tdp.type = SC_TRAP_USER;
     tdp.user_id = uid;
@@ -172,8 +160,6 @@ void send_trapposi_usersize_data(SOCKET soc, int uid, float usize, int ti, short
 void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy)
 {
     sc_item_type_packet itp;
-    char buf[MAX_BUFFER];
-
 
     itp.type = SC_ITEM_USER;
     itp.user_id = uid;
@@ -187,7 +173,6 @@ void send_item_type(SOCKET soc, int uid, bool type, int ii, short ix, short iy)
 void send_user_logout_packet(SOCKET soc, int client)
 {
     sc_logout_packet lop;
-    char buf[MAX_BUFFER];
 
     lop.type = SC_LOGOUT;
     lop.id = client;
@@ -199,7 +184,6 @@ void send_user_logout_packet(SOCKET soc, int client)
 void send_user_size_packet(SOCKET soc, int uid, float usize)
 {
     sc_user_size_packet usp;
-    char buf[MAX_BUFFER];
 
     usp.type = SC_USER_SIZE;
     usp.id = uid;
@@ -212,7 +196,6 @@ void send_user_size_packet(SOCKET soc, int uid, float usize)
 void send_chat_packet(SOCKET soc, cs_chat_packet* cp)
 {
     cs_chat_packet scp;
-    char buf[MAX_BUFFER];
 
     scp.type = SC_CHAT;
     scp.id = cp->id;
@@ -225,7 +208,6 @@ void send_chat_packet(SOCKET soc, cs_chat_packet* cp)
 // 클라이언트와 데이터 통신
 DWORD WINAPI ProcessClient(LPVOID arg)
 {
- 
     SOCKET client_sock = (SOCKET)arg;
     int retval;
     SOCKADDR_IN clientaddr;
@@ -240,7 +222,6 @@ DWORD WINAPI ProcessClient(LPVOID arg)
         //데이터 수신
         retval = recvn(client_sock, (char*)&len, sizeof(int), 0);
         retval = recvn(client_sock, buf, len, 0);
-        //retval = recv(client_sock, (char*)&buf, MAX_BUFFER, 0);
         if (client_sock == INVALID_SOCKET) err_quit("recv()");
         if (retval <= 0) break;
 

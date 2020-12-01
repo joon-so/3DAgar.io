@@ -12,9 +12,9 @@ using namespace std;
 #define SERVERPORT      9000
 #define MAX_BUFFER      1024
 #define MAP_SIZE	    30.f	//맵 한칸당 크기
-#define FEED_MAX_NUM    500
-#define ITEM_COUNT      20
-#define MAX_CHAT_SIZE 100
+#define FEED_MAX_NUM    500     //최대먹이 갯수
+#define ITEM_COUNT      20      //최대 아이템 개수
+#define MAX_CHAT_SIZE 100       //최대 채팅 길이
 
 CRITICAL_SECTION ac_move;
 CRITICAL_SECTION ac_user;
@@ -65,7 +65,6 @@ typedef struct sc_logout_packet
 
 }sc_logout_packet;
 
-
 typedef struct sc_user_size_packet
 {
     char type;
@@ -73,7 +72,6 @@ typedef struct sc_user_size_packet
     float  size;
 
 }sc_user_size_packet;
-
 
 typedef struct cs_chat_packet
 {

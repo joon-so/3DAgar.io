@@ -283,7 +283,6 @@ void moveCamera()
 
 void SendChatting(char chat[MAX_CHAT_SIZE]) {
 	cs_chat_packet cp;
-	char buf[MAX_BUFFER];
 	int retval;
 
 	cp.type = CS_CHAT;
@@ -296,7 +295,6 @@ void SendChatting(char chat[MAX_CHAT_SIZE]) {
 
 	retval = send(serverSocket, (char*)&cp, sizeof(cs_chat_packet), 0);
 }
-
 
 DWORD WINAPI Chatting(LPVOID arg)
 {
@@ -441,8 +439,7 @@ void processdata(char* buf) {
 		cout << "Feed Size:" << sizeof(feed) << endl;
 		break;
 	}
-	case SC_FEED_USER:
-	{
+	case SC_FEED_USER:{
 		sc_feed_data_packet* fdp = reinterpret_cast<sc_feed_data_packet*>(buf);
 		//내가 먹이를 먹고 사이즈가 커진 경우
 		if (fdp->user_id == player.GetId())
@@ -484,8 +481,7 @@ void processdata(char* buf) {
 		cout << "전체 트랩 데이터 수신 완료" << endl;
 		break;
 	}
-	case SC_TRAP_USER:
-	{
+	case SC_TRAP_USER:{
 		sc_trap_data_packet* tdp = reinterpret_cast<sc_trap_data_packet*>(buf);
 		if (tdp->user_id == player.GetId())
 		{
@@ -514,16 +510,14 @@ void processdata(char* buf) {
 		sort(user_rank.begin(), user_rank.end());
 		break;
 	}
-	case SC_ALL_ITEM:
-	{
+	case SC_ALL_ITEM:{
 		sc_all_item_packet* aip = reinterpret_cast<sc_all_item_packet*>(buf);
 
 		memcpy(item, aip->items, sizeof(aip->items));
 		cout << "전체 아이템 데이터 수신 완료" << endl;
 		break;
 	}
-	case SC_ITEM_USER:
-	{
+	case SC_ITEM_USER:{
 		sc_item_type_packet* itp = reinterpret_cast<sc_item_type_packet*>(buf);
 
 		if (itp->user_id == player.GetId())
@@ -537,8 +531,7 @@ void processdata(char* buf) {
 
 		break;
 	}
-	case SC_USER_SIZE:
-	{
+	case SC_USER_SIZE:{
 		sc_user_size_packet* usp = reinterpret_cast<sc_user_size_packet*>(buf);
 		if (player.GetId() == usp->id)
 		{
@@ -566,8 +559,7 @@ void processdata(char* buf) {
 		sort(user_rank.begin(), user_rank.end());
 		break;
 	}
-	case SC_CHAT:
-	{
+	case SC_CHAT:{
 		cs_chat_packet* cp = reinterpret_cast<cs_chat_packet*>(buf);
 		//cout << "Chatting" << endl;
 		//cout << cp->id << endl;
