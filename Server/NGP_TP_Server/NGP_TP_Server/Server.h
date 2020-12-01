@@ -97,7 +97,6 @@ public:
     User(int id) :id{ id } {
         x = enemy_position_NUM(dre);
         y = enemy_position_NUM(dre);
-        //size = 16.f;
     }
 
     //다른 원과의 거리 측정

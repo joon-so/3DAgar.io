@@ -63,9 +63,6 @@ void ShowLose()
 	glColor3f(0.0f, 0.f, 0.f);
 	short x = player.GetXpos() - 400;
 	short y = player.GetYpos() + 100;
-	//x =500
-	//y = 500
-	//Y
 	//좌상향
 	glRectf(x, y, x + 20, y -20);
 	glRectf(x + 10, y - 10, x + 30, y - 30);
@@ -220,15 +217,6 @@ void myDisplay(void)
 	glColor3f(0.0, 0.0, 0.0);
 	glPointSize(1.0);
 
-	// 사이즈가 커질때마다 비율에 따라 스케일 조정
-	//if ((int)player.GetPrevSize() != (int)player.GetSize()) {
-	//	float scale = (MAP_SIZE * 15 - (player.GetSize() - player.GetPrevSize())) / (MAP_SIZE * 15);
-	//	glScalef(scale, scale, 0);
-	//	//glTranslatef(-(1.f - scale) / 2, -(1.f - scale) / 2, 0.0f);
-	//	glTranslatef(player.GetXpos() * (1.f - scale) , player.GetYpos() * (1.f - scale), 0.0f);
-	//	player.SetPrevSize(player.GetSize());
-	//}
-
 	//맵생성
 	DrawMap();
 	
@@ -242,10 +230,6 @@ void myDisplay(void)
 	for (int i = 0; i < ITEM_COUNT; i++)
 		item[i].show();
 
-
-	//gluOrtho2D(player.GetXpos() - 400, p+layer.GetXpos() + 400, player.GetYpos() - 400, player.GetYpos() + 400);
-	//gluOrtho2D(-1, 1, -1, 1);
-
 	//카메라 움직임
 	moveCamera();
 
@@ -256,7 +240,6 @@ void myDisplay(void)
 		user.show();
 		DrawTexte(user.GetXpos() - 15, user.GetYpos() - 5, id, GLUT_BITMAP_HELVETICA_18, false);
 	}
-
 
 	ShowDisplay();
 	ShowChat();
@@ -314,7 +297,6 @@ DWORD WINAPI Chatting(LPVOID arg)
 			break;
 	}
 
-	//cout << chat << endl;
 	SendChatting(chat);
 	//채팅 전송
 

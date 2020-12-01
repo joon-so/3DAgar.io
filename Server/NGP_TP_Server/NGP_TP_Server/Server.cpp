@@ -279,8 +279,6 @@ DWORD WINAPI ProcessClient(LPVOID arg)
                 item[i].CrushCheck(now_user, i);
             }
             LeaveCriticalSection(&ac_item);
-
-            //cout << client_sock << " x = " << x << " y = " << y << endl;
             break;
         }
         case CS_CHAT:
@@ -390,7 +388,6 @@ int main()
         //유저의 좌표를 서버에 보내고
         send_first_pos(client_sock, user);
 
-
         cout << "현재 접속한 User: ";
         for (const User u : users)
             cout << u.GetId() << "->";
@@ -437,8 +434,6 @@ void User::CrushCheck(User user1)
         if (MeasureDistance(user1) < user1.GetSize()) {
             float newsize = user1.GetSize() + size * 0.3f;
             user1.SetSize(newsize);
-            cout << "플레이어 충돌처리" << endl;
-            //내가 죽고 상대는 커지고
             for (User u : users)
             {
                 //상대가 커지는 것을 알림
@@ -467,7 +462,6 @@ void User::CrushCheck(User user1)
         if (MeasureDistance(user1) < size) {
             float newsize = size + user1.GetSize() * 0.3f;
             size = newsize;
-            //cout << "플레이어 충돌처리" << endl;
             //상대가 죽고 나는 커지고
             for (User u : users)
             {
